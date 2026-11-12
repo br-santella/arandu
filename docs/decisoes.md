@@ -12,6 +12,10 @@
 | 2026-11-12 | Pipeline roda localmente (Tesseract + modelo aberto via Ollama) | Documentos não saem da máquina; processamento em lote não precisa de servidor |
 | 2026-11-12 | Embeddings: `bge-m3` (1024 dimensões) | Multilíngue, bom em português, aberto e compatível com `vector(1024)` do esquema |
 | 2026-11-12 | Versão fixada do embedding: `bge-m3:latest`, ID Ollama `790764642607` (1,2 GB) | Testado contra o Ollama local: 1024 dimensões. Se o ID mudar, reindexar todos os chunks |
+| 2026-11-12 | App: Expo SDK 58, rotas em `apps/mobile/src/app` (padrão atual do Expo Router), web como SPA (`output: single`) | Segue o template oficial; SPA é a hospedagem estática mais simples |
+| 2026-11-12 | Removidos do template Expo: `.claude/settings.json` (ativava plugin) e `LICENSE` da Expo | Nenhum plugin ativado sem pedido da equipe; a licença MIT da raiz cobre o app |
+| 2026-11-12 | Paleta de texto testada automaticamente contra WCAG AA (4,5:1) | Acessibilidade garantida por teste, não por revisão manual |
+| 2026-11-12 | Supabase CLI 3.1.0 via `npx`; login anônimo ativado no `config.toml` | Sem instalação global; usuário anônimo é a base da privacidade (docs/04, decisão 4) |
 | 2026-11-12 | Busca do guia híbrida: vetorial + full-text em português do Postgres, com fallback só full-text | Se o serviço de embeddings cair, o guia continua recuperando trechos; full-text é gratuito e embutido |
 | 2026-11-12 | Guia degrada para "modo trechos" se o LLM estiver indisponível | Mostra os trechos recuperados com fonte, sem gerar texto. Nunca inventa e nunca fica fora do ar na demonstração |
 | 2026-11-12 | Modelo do guia escolhido pelo conjunto de testes da doc 06 | Se o modelo aberto não atingir zero afirmações sem citação e recusas corretas, há dado concreto para justificar uma API paga |

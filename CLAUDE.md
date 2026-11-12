@@ -48,6 +48,7 @@ Equipe: Brunna Santella Souza (produto, app, parcerias) e Grazielle Florentino d
 ```bash
 # app
 cd apps/mobile && npm install && npx expo start
+npm test && npm run typecheck && npm run lint   # em apps/mobile
 
 # banco local
 npx supabase start && npx supabase db reset   # aplica migrations e seed

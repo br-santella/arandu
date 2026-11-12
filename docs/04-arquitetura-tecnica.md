@@ -56,17 +56,18 @@ arandu/
 │   └── brand/                # logo, cores, fontes
 ├── apps/
 │   ├── mobile/               # Expo app (Android, iOS, web)
-│   │   ├── app/              # rotas (expo-router)
-│   │   ├── components/
-│   │   ├── features/
+│   │   ├── src/app/          # rotas (expo-router)
+│   │   ├── src/theme/        # cores, tipografia, contraste (testado)
+│   │   ├── src/components/
+│   │   ├── src/features/
 │   │   │   ├── map/          # mapa, revelação, proximidade
 │   │   │   ├── points/       # cartão do ponto, desafio
 │   │   │   ├── daily/        # nome escondido, mito ou fato
 │   │   │   ├── trails/
 │   │   │   ├── guide/        # chat do guia
 │   │   │   └── classroom/    # modo turma
-│   │   ├── lib/              # supabase client, h3, geo utils
-│   │   └── tests/
+│   │   ├── src/lib/          # supabase client, h3, geo utils
+│   │   └── src/**/__tests__/ # testes (jest-expo)
 │   └── admin/                # painel de curadoria
 ├── supabase/
 │   ├── migrations/           # esquema SQL versionado

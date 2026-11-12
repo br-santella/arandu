@@ -117,7 +117,8 @@ Riscos e mitigações dos planos gratuitos estão em [`docs/04-arquitetura-tecni
 | Políticas RLS | `supabase/migrations/20261112000100_rls.sql` | 🟢 Implementado |
 | Testes de RLS e do índice do guia | `supabase/tests/database/rls.test.sql` | 🟢 Implementado |
 | Seed do piloto | `supabase/seed/` | ⚪ Planejado (depende do conteúdo da equipe) |
-| App Expo | `apps/mobile/` | ⚪ Planejado |
+| App Expo: base (tema, fontes, rotas, boas-vindas) | `apps/mobile/src/` | 🟢 Implementado (12 testes, typecheck, lint e export web ok; ainda não aberto num aparelho) |
+| App Expo: telas de mapa, cartão, desafios, guia | `apps/mobile/src/app/` | ⚪ Planejado (rotas vazias, M2–M6) |
 | Painel de curadoria | `apps/admin/` | ⚪ Planejado |
 | Pipeline: configuração e cliente de IA trocável | `pipeline/arandu_pipeline/config.py`, `llm.py` | 🟢 Implementado (10 testes com endpoint simulado; embeddings verificados contra o Ollama real com `bge-m3`; chat ainda sem modelo escolhido) |
 | Pipeline: etapas ingest → publish | `pipeline/arandu_pipeline/` | ⚪ Planejado (M4) |
