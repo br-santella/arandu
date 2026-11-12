@@ -2,7 +2,7 @@ name: supabase keep-alive
 
 # The Supabase free plan pauses projects after ~1 week without activity.
 # A light read every 3 days keeps the remote project awake (docs/04).
-# Requires repository secrets SUPABASE_URL and SUPABASE_ANON_KEY; skips otherwise.
+# Requires repository secrets SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY; skips otherwise.
 
 on:
   schedule:
@@ -17,14 +17,13 @@ jobs:
       - name: Light read through RLS (published points only)
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
         run: |
-          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_PUBLISHABLE_KEY" ]; then
             echo "Secrets not configured yet; skipping."
             exit 0
           fi
           curl --fail --silent --show-error --max-time 30 \
             "$SUPABASE_URL/rest/v1/point?select=id&limit=1" \
-            -H "apikey: $SUPABASE_ANON_KEY" \
-            -H "Authorization: Bearer $SUPABASE_ANON_KEY" > /dev/null
+            -H "apikey: $SUPABASE_PUBLISHABLE_KEY" > /dev/null
           echo "Supabase project is awake."

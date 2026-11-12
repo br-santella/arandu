@@ -16,6 +16,7 @@
 | 2026-11-12 | Removidos do template Expo: `.claude/settings.json` (ativava plugin) e `LICENSE` da Expo | Nenhum plugin ativado sem pedido da equipe; a licença MIT da raiz cobre o app |
 | 2026-11-12 | Paleta de texto testada automaticamente contra WCAG AA (4,5:1) | Acessibilidade garantida por teste, não por revisão manual |
 | 2026-11-12 | Supabase CLI 3.1.0 via `npx`; login anônimo ativado no `config.toml` | Sem instalação global; usuário anônimo é a base da privacidade (docs/04, decisão 4) |
+| 2026-11-12 | Projeto Supabase remoto `pgdrpfauuxaxvvnqozzv` (plano gratuito). Valores públicos em `.env.remote` (fora do git); secret key, service role e senha do banco nunca no repositório nem no chat | Separar ambiente local e remoto; chaves secretas só em `supabase secrets` e `.env` |
 | 2026-11-12 | Busca do guia híbrida: vetorial + full-text em português do Postgres, com fallback só full-text | Se o serviço de embeddings cair, o guia continua recuperando trechos; full-text é gratuito e embutido |
 | 2026-11-12 | Guia degrada para "modo trechos" se o LLM estiver indisponível | Mostra os trechos recuperados com fonte, sem gerar texto. Nunca inventa e nunca fica fora do ar na demonstração |
 | 2026-11-12 | Modelo do guia escolhido pelo conjunto de testes da doc 06 | Se o modelo aberto não atingir zero afirmações sem citação e recusas corretas, há dado concreto para justificar uma API paga |

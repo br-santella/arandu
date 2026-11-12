@@ -5,7 +5,7 @@
 ```mermaid
 flowchart LR
   subgraph untrusted["Não confiável: aparelho do usuário"]
-    app["App<br/>anon key pública"]
+    app["App<br/>publishable key pública"]
     pos["Posição do usuário"]
     pos -. "fica aqui" .-> app
   end
@@ -34,7 +34,7 @@ flowchart LR
 
 Regras:
 
-- O app só conhece a **anon key**, que é pública por design; a proteção é feita pelas RLS.
+- O app só conhece a **publishable key** (`sb_publishable_…`, sucessora da anon key), que é pública por design; a proteção é feita pelas RLS.
 - A **service role key** fica só no pipeline e no backend do painel, nunca em variáveis `EXPO_PUBLIC_*`.
 - Endereço, modelo e chave do LLM ficam nos **secrets do Supabase**, nunca no app.
 - O LLM só recebe trechos que passaram pelo `content_chunk_guard`: conteúdo restrito nunca chega a ele.
