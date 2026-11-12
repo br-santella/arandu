@@ -119,7 +119,7 @@ Riscos e mitigações dos planos gratuitos estão em [`docs/04-arquitetura-tecni
 | Seed do piloto | `supabase/seed/` | ⚪ Planejado (depende do conteúdo da equipe) |
 | App Expo | `apps/mobile/` | ⚪ Planejado |
 | Painel de curadoria | `apps/admin/` | ⚪ Planejado |
-| Pipeline: configuração e cliente de IA trocável | `pipeline/arandu_pipeline/config.py`, `llm.py` | 🟢 Implementado (10 testes com endpoint simulado; ainda não testado contra o Ollama real) |
+| Pipeline: configuração e cliente de IA trocável | `pipeline/arandu_pipeline/config.py`, `llm.py` | 🟢 Implementado (10 testes com endpoint simulado; embeddings verificados contra o Ollama real com `bge-m3`; chat ainda sem modelo escolhido) |
 | Pipeline: etapas ingest → publish | `pipeline/arandu_pipeline/` | ⚪ Planejado (M4) |
 | Guia (Edge Function) | `supabase/functions/guide/` | ⚪ Planejado |
 | CI e keep-alive | `.github/workflows/` | ⚪ Planejado |

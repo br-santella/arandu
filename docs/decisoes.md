@@ -11,6 +11,7 @@
 | 2026-11-12 | IA open source por padrão, com provedor trocável (API compatível com OpenAI, configurada por `.env`) | Custo zero no protótipo, alinhado ao critério *open source* e à soberania de dados. Trocar de modelo/provedor é só configuração |
 | 2026-11-12 | Pipeline roda localmente (Tesseract + modelo aberto via Ollama) | Documentos não saem da máquina; processamento em lote não precisa de servidor |
 | 2026-11-12 | Embeddings: `bge-m3` (1024 dimensões) | Multilíngue, bom em português, aberto e compatível com `vector(1024)` do esquema |
+| 2026-11-12 | Versão fixada do embedding: `bge-m3:latest`, ID Ollama `790764642607` (1,2 GB) | Testado contra o Ollama local: 1024 dimensões. Se o ID mudar, reindexar todos os chunks |
 | 2026-11-12 | Busca do guia híbrida: vetorial + full-text em português do Postgres, com fallback só full-text | Se o serviço de embeddings cair, o guia continua recuperando trechos; full-text é gratuito e embutido |
 | 2026-11-12 | Guia degrada para "modo trechos" se o LLM estiver indisponível | Mostra os trechos recuperados com fonte, sem gerar texto. Nunca inventa e nunca fica fora do ar na demonstração |
 | 2026-11-12 | Modelo do guia escolhido pelo conjunto de testes da doc 06 | Se o modelo aberto não atingir zero afirmações sem citação e recusas corretas, há dado concreto para justificar uma API paga |
