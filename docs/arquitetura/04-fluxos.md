@@ -114,7 +114,7 @@ sequenceDiagram
   actor U as Usuário
   participant App as App
   participant F as Edge Function guide
-  participant E as Embeddings (bge-m3)
+  participant E as Embeddings (qwen3-embedding)
   participant DB as Postgres
   participant L as LLM
 
@@ -122,7 +122,7 @@ sequenceDiagram
   App->>F: pergunta (sem dados pessoais)
   F->>F: limite por usuário (GUIDE_RATE_LIMIT_PER_HOUR)
   alt embeddings disponíveis
-    F->>E: embedding da pergunta
+    F->>E: embedding da pergunta (com instrução de consulta)
     E-->>F: vetor 1024
     F->>DB: busca híbrida (vetor + full-text pt)
   else embeddings fora do ar

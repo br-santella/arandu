@@ -56,7 +56,7 @@ npx supabase test db                            # testes pgTAP (RLS e guarda do 
 npx supabase db push --remote                   # aplica migrations no projeto remoto (CLI 3: sem --remote, vai para o local)
 
 # modelos abertos locais (Ollama) — tags exatas definidas em .env
-ollama pull "$LLM_MODEL" && ollama pull bge-m3
+ollama pull qwen3.5:9b && ollama pull qwen3-embedding:0.6b
 
 # pipeline de IA
 cd pipeline && uv sync && uv run pytest

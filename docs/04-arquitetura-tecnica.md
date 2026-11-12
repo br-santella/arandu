@@ -38,8 +38,8 @@
 | Painel de curadoria | **Next.js** ou Expo web em rota separada | Interface simples de formulários e tabelas |
 | Pipeline de IA | **Python** (uv, pydantic, pytest) | Ecossistema de OCR, NLP e notebooks |
 | OCR | **Tesseract** com modelo `por` | Gratuito e local |
-| LLM | **Modelo aberto** (famílias Qwen, Gemma, Llama ou Mistral, 7–9B quantizado) via **Ollama**, acessado por uma API compatível com OpenAI (`LLM_BASE_URL`, `LLM_MODEL`) | Custo zero, roda em GPU de 8 GB; trocar por outro provedor (aberto hospedado ou comercial) é só configuração |
-| Embeddings | **`bge-m3`** (1024 dimensões), mesma interface compatível com OpenAI (`EMBEDDING_BASE_URL`) | Aberto, multilíngue, bom em português. O mesmo modelo deve ser usado na indexação e na consulta |
+| LLM | **`qwen3.5:9b`** (Q4_K_M, Apache 2.0) via **Ollama**, acessado por uma API compatível com OpenAI (`LLM_BASE_URL`, `LLM_MODEL`), com raciocínio desligado (`LLM_REASONING_EFFORT=none`) | Custo zero, cabe inteiro em GPU de 8 GB; trocar por outro modelo ou provedor é só configuração. Comparação: `gemma4:12b` |
+| Embeddings | **`qwen3-embedding:0.6b`** (1024 dimensões), mesma interface compatível com OpenAI (`EMBEDDING_BASE_URL`); reserva: `bge-m3` | Aberto, multilíngue, leve (0,6 GB). Instrução só nas perguntas (`EMBEDDING_QUERY_INSTRUCTION`). O mesmo modelo e instrução na indexação e na consulta |
 | Busca do guia | pgvector + full-text `portuguese` do Postgres | Busca híbrida; full-text é o fallback se o serviço de embeddings estiver fora |
 | Hospedagem web | Exportação estática do Expo em hospedagem gratuita (GitHub Pages, Netlify, Vercel ou EAS Hosting) | Custo zero, sem servidor para manter |
 

@@ -38,8 +38,11 @@ class ChatClient:
         api_key: str | None = None,
         timeout_seconds: float = 30.0,
         http: httpx.Client | None = None,
+        reasoning_effort: str | None = None,
     ) -> None:
         self.model = model  # exact tag, stored in ai_proposal.model
+        # e.g. "none" to disable "thinking" on reasoning models; None = provider default.
+        self.reasoning_effort = reasoning_effort
         self._base_url = base_url.rstrip("/")
         self._http = http or httpx.Client(timeout=timeout_seconds)
         self._headers = _headers(api_key)
@@ -52,13 +55,21 @@ class ChatClient:
     ) -> T:
         """Return a response validated against `schema`.
 
-        Uses temperature 0 and a JSON Schema response format. Invalid output is
-        retried up to `max_retries` times, then StructuredOutputError is raised.
+        Uses deterministic sampling and a JSON Schema response format. Invalid
+        output is retried up to `max_retries` times, then StructuredOutputError
+        is raised.
+
+        Penalties are forced to 0: some model packages ship with
+        presence_penalty > 0, which pushes the model to reword text and breaks
+        the literal-excerpt rule (docs/06).
         """
-        payload = {
+        payload: dict = {
             "model": self.model,
             "messages": messages,
             "temperature": 0,
+            "top_p": 1,
+            "presence_penalty": 0,
+            "frequency_penalty": 0,
             "response_format": {
                 "type": "json_schema",
                 "json_schema": {
@@ -68,6 +79,8 @@ class ChatClient:
                 },
             },
         }
+        if self.reasoning_effort is not None:
+            payload["reasoning_effort"] = self.reasoning_effort
         last_error: Exception | None = None
         for _ in range(max_retries + 1):
             response = self._http.post(
@@ -93,14 +106,28 @@ class EmbeddingClient:
         api_key: str | None = None,
         timeout_seconds: float = 30.0,
         http: httpx.Client | None = None,
+        query_instruction: str | None = None,
     ) -> None:
         self.model = model
         self.dim = dim
+        # Asymmetric models (e.g. qwen3-embedding) need an instruction on queries
+        # only. Must be identical in the pipeline and in the guide Edge Function.
+        self.query_instruction = query_instruction
         self._base_url = base_url.rstrip("/")
         self._http = http or httpx.Client(timeout=timeout_seconds)
         self._headers = _headers(api_key)
 
+    def embed_query(self, query: str) -> list[float]:
+        """Embed a user question (adds the query instruction, if any)."""
+        text = (
+            f"Instruct: {self.query_instruction}\nQuery: {query}"
+            if self.query_instruction
+            else query
+        )
+        return self.embed([text])[0]
+
     def embed(self, texts: list[str]) -> list[list[float]]:
+        """Embed documents/chunks as-is (no instruction)."""
         if not texts:
             return []
         response = self._http.post(

@@ -112,3 +112,64 @@ def test_embed_empty_input_makes_no_request():
         raise AssertionError("no request expected")
 
     assert make_embed(handler).embed([]) == []
+
+
+def test_structured_forces_zero_penalties_for_literal_excerpts():
+    seen = {}
+
+    def handler(request):
+        seen["body"] = json.loads(request.content)
+        return chat_reply(VALID)
+
+    make_chat(handler).structured([], Place)
+    body = seen["body"]
+    assert body["presence_penalty"] == 0
+    assert body["frequency_penalty"] == 0
+    assert body["top_p"] == 1
+    assert "reasoning_effort" not in body  # provider default unless configured
+
+
+def test_structured_sends_reasoning_effort_when_configured():
+    seen = {}
+
+    def handler(request):
+        seen["body"] = json.loads(request.content)
+        return chat_reply(VALID)
+
+    http = httpx.Client(transport=httpx.MockTransport(handler))
+    client = ChatClient("http://llm.test/v1", "m", http=http, reasoning_effort="none")
+    client.structured([], Place)
+    assert seen["body"]["reasoning_effort"] == "none"
+
+
+def test_embed_query_adds_instruction_but_documents_do_not():
+    inputs = []
+
+    def handler(request):
+        body = json.loads(request.content)
+        inputs.append(body["input"])
+        return httpx.Response(
+            200,
+            json={
+                "data": [{"index": i, "embedding": [1, 0, 0]} for i in range(len(body["input"]))]
+            },
+        )
+
+    http = httpx.Client(transport=httpx.MockTransport(handler))
+    client = EmbeddingClient(
+        "http://emb.test/v1", "m", dim=3, http=http, query_instruction="Busque"
+    )
+    client.embed_query("pergunta")
+    client.embed(["documento"])
+    assert inputs == [["Instruct: Busque\nQuery: pergunta"], ["documento"]]
+
+
+def test_embed_query_without_instruction_is_plain():
+    inputs = []
+
+    def handler(request):
+        inputs.append(json.loads(request.content)["input"])
+        return httpx.Response(200, json={"data": [{"index": 0, "embedding": [1, 0, 0]}]})
+
+    make_embed(handler).embed_query("pergunta")
+    assert inputs == [["pergunta"]]

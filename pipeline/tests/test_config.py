@@ -11,6 +11,8 @@ ENV_VARS = [
     "EMBEDDING_MODEL",
     "EMBEDDING_DIM",
     "EMBEDDING_API_KEY",
+    "EMBEDDING_QUERY_INSTRUCTION",
+    "LLM_REASONING_EFFORT",
 ]
 
 
@@ -34,5 +36,7 @@ def test_defaults_point_to_local_ollama(clean_env, monkeypatch):
 
     assert settings.llm.base_url == "http://localhost:11434/v1"
     assert settings.llm.api_key is None
-    assert settings.embedding.model == "bge-m3"
+    assert settings.embedding.model == "qwen3-embedding:0.6b"
+    assert settings.embedding.query_instruction is None
+    assert settings.llm.reasoning_effort is None
     assert settings.embedding.dim == 1024

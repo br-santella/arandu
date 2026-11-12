@@ -14,7 +14,7 @@ Responsáveis: **B** = Brunna (app, produto, parcerias), **G** = Grazielle (IA, 
 | 0.4 | ✅ Migration inicial com o esquema de `docs/05`, RLS e testes (local, CI e remoto) | G | M |
 | 0.5 | ✅ App Expo com rotas vazias, tema (cores e fontes) e logo | B | M |
 | 0.6 | ✅ CI com lint e testes | B | P |
-| 0.7 | ⏳ Ollama local: `bge-m3` ✅; modelo de LLM a escolher | G | P |
+| 0.7 | ✅ Ollama local: `qwen3.5:9b` e `qwen3-embedding:0.6b`, versões fixadas | G | P |
 | 0.8 | ✅ Workflow agendado de keep-alive do Supabase remoto | G | P |
 
 **Pronto quando:** o app abre com a tela de boas-vindas e o banco sobe com `supabase db reset`.

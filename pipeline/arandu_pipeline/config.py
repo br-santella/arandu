@@ -22,6 +22,7 @@ class LLMSettings:
     model: str
     api_key: str | None
     timeout_seconds: float
+    reasoning_effort: str | None
 
 
 @dataclass(frozen=True)
@@ -30,6 +31,7 @@ class EmbeddingSettings:
     model: str
     dim: int
     api_key: str | None
+    query_instruction: str | None
 
 
 @dataclass(frozen=True)
@@ -56,11 +58,13 @@ def load_settings(env_file: Path | None = None) -> Settings:
             model=model,
             api_key=_get("LLM_API_KEY"),
             timeout_seconds=float(_get("LLM_TIMEOUT_SECONDS", "30")),
+            reasoning_effort=_get("LLM_REASONING_EFFORT"),
         ),
         embedding=EmbeddingSettings(
             base_url=_get("EMBEDDING_BASE_URL", "http://localhost:11434/v1"),
-            model=_get("EMBEDDING_MODEL", "bge-m3"),
+            model=_get("EMBEDDING_MODEL", "qwen3-embedding:0.6b"),
             dim=int(_get("EMBEDDING_DIM", "1024")),
             api_key=_get("EMBEDDING_API_KEY"),
+            query_instruction=_get("EMBEDDING_QUERY_INSTRUCTION"),
         ),
     )

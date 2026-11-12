@@ -44,7 +44,7 @@ flowchart TB
   subgraph team["Máquina da equipe"]
     pipe["pipeline/<br/>Python + uv"]
     tess["Tesseract OCR"]
-    ollama["Ollama<br/>LLM aberto + bge-m3"]
+    ollama["Ollama<br/>qwen3.5:9b + qwen3-embedding:0.6b"]
     raw[("Documentos<br/>pipeline/data")]
     raw --> pipe
     pipe --> tess
@@ -120,7 +120,7 @@ Riscos e mitigações dos planos gratuitos estão em [`docs/04-arquitetura-tecni
 | App Expo: base (tema, fontes, rotas, boas-vindas) | `apps/mobile/src/` | 🟢 Implementado (12 testes, typecheck, lint e export web ok; ainda não aberto num aparelho) |
 | App Expo: telas de mapa, cartão, desafios, guia | `apps/mobile/src/app/` | ⚪ Planejado (rotas vazias, M2–M6) |
 | Painel de curadoria | `apps/admin/` | ⚪ Planejado |
-| Pipeline: configuração e cliente de IA trocável | `pipeline/arandu_pipeline/config.py`, `llm.py` | 🟢 Implementado (10 testes com endpoint simulado; embeddings verificados contra o Ollama real com `bge-m3`; chat ainda sem modelo escolhido) |
+| Pipeline: configuração e cliente de IA trocável | `pipeline/arandu_pipeline/config.py`, `llm.py` | 🟢 Implementado (14 testes com endpoint simulado; saída estruturada e embeddings verificados contra `qwen3.5:9b` e `qwen3-embedding:0.6b` reais) |
 | Pipeline: etapas ingest → publish | `pipeline/arandu_pipeline/` | ⚪ Planejado (M4) |
 | Guia (Edge Function) | `supabase/functions/guide/` | ⚪ Planejado |
 | CI (mobile, pipeline, database) e keep-alive | `.github/workflows/` | 🟢 Implementado (os três workflows passaram no GitHub; keep-alive confirmou o projeto remoto ativo) |
