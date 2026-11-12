@@ -8,14 +8,14 @@ Responsáveis: **B** = Brunna (app, produto, parcerias), **G** = Grazielle (IA, 
 
 | # | Tarefa | Resp. | Tam. |
 | --- | --- | --- | --- |
-| 0.1 | Criar repositório, licença, `CLAUDE.md`, `docs/`, `.env.example` | B | P |
-| 0.2 | ~~Registrar decisão de stack em `docs/decisoes.md`~~ Feito: Expo, Android e web (2026-11-12) | B+G | P |
-| 0.3 | Projeto Supabase local e remoto; extensões PostGIS e pgvector | G | P |
-| 0.4 | Migration inicial com o esquema de `docs/05` | G | M |
-| 0.5 | App Expo com rotas vazias, tema (cores e fontes) e logo | B | M |
-| 0.6 | CI com lint e testes | B | P |
-| 0.7 | Ollama local com o modelo de LLM e `bge-m3` (tags fixadas e registradas) | G | P |
-| 0.8 | Workflow agendado de keep-alive do Supabase remoto | G | P |
+| 0.1 | ✅ Criar repositório (privado), licença, `CLAUDE.md`, `docs/`, `.env.example` | B | P |
+| 0.2 | ✅ Decisão de stack: Expo, Android e web | B+G | P |
+| 0.3 | ✅ Projeto Supabase local e remoto; extensões PostGIS e pgvector (falta ligar login anônimo no remoto) | G | P |
+| 0.4 | ✅ Migration inicial com o esquema de `docs/05`, RLS e testes (local, CI e remoto) | G | M |
+| 0.5 | ✅ App Expo com rotas vazias, tema (cores e fontes) e logo | B | M |
+| 0.6 | ✅ CI com lint e testes | B | P |
+| 0.7 | ⏳ Ollama local: `bge-m3` ✅; modelo de LLM a escolher | G | P |
+| 0.8 | ✅ Workflow agendado de keep-alive do Supabase remoto | G | P |
 
 **Pronto quando:** o app abre com a tela de boas-vindas e o banco sobe com `supabase db reset`.
 

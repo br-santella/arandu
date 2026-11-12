@@ -123,7 +123,7 @@ Riscos e mitigações dos planos gratuitos estão em [`docs/04-arquitetura-tecni
 | Pipeline: configuração e cliente de IA trocável | `pipeline/arandu_pipeline/config.py`, `llm.py` | 🟢 Implementado (10 testes com endpoint simulado; embeddings verificados contra o Ollama real com `bge-m3`; chat ainda sem modelo escolhido) |
 | Pipeline: etapas ingest → publish | `pipeline/arandu_pipeline/` | ⚪ Planejado (M4) |
 | Guia (Edge Function) | `supabase/functions/guide/` | ⚪ Planejado |
-| CI (mobile, pipeline, database) e keep-alive | `.github/workflows/` | 🟡 Escrito, não testado (roda no primeiro push; keep-alive aguarda os secrets do Supabase remoto) |
+| CI (mobile, pipeline, database) e keep-alive | `.github/workflows/` | 🟢 Implementado (os três workflows passaram no GitHub; keep-alive confirmou o projeto remoto ativo) |
 
 ## Princípios que a arquitetura garante
 
