@@ -53,6 +53,7 @@ npm test && npm run typecheck && npm run lint   # em apps/mobile
 # banco local
 npx supabase start && npx supabase db reset   # aplica migrations e seed
 npx supabase test db                            # testes pgTAP (RLS e guarda do guia)
+npx supabase db push --remote                   # aplica migrations no projeto remoto (CLI 3: sem --remote, vai para o local)
 
 # modelos abertos locais (Ollama) — tags exatas definidas em .env
 ollama pull "$LLM_MODEL" && ollama pull bge-m3
