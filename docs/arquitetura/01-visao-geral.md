@@ -113,9 +113,9 @@ Riscos e mitigações dos planos gratuitos estão em [`docs/04-arquitetura-tecni
 
 | Componente | Local | Estado |
 | --- | --- | --- |
-| Esquema do banco | `supabase/migrations/20261112000000_initial_schema.sql` | 🟡 Escrito, não testado |
-| Políticas RLS | `supabase/migrations/20261112000100_rls.sql` | 🟡 Escrito, não testado |
-| Testes de RLS e do índice do guia | `supabase/tests/database/rls.test.sql` | 🟡 Escrito, não testado |
+| Esquema do banco | `supabase/migrations/20261112000000_initial_schema.sql` | 🟢 Implementado |
+| Políticas RLS | `supabase/migrations/20261112000100_rls.sql` | 🟢 Implementado |
+| Testes de RLS e do índice do guia | `supabase/tests/database/rls.test.sql` | 🟢 Implementado |
 | Seed do piloto | `supabase/seed/` | ⚪ Planejado (depende do conteúdo da equipe) |
 | App Expo | `apps/mobile/` | ⚪ Planejado |
 | Painel de curadoria | `apps/admin/` | ⚪ Planejado |

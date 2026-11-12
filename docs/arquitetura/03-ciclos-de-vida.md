@@ -2,7 +2,7 @@
 
 ## Validação de um ponto
 
-Estado: 🟡 enum e triggers escritos; ⚪ transições no painel planejadas (M5).
+Estado: 🟢 enum e triggers implementados e testados; ⚪ transições no painel planejadas (M5).
 
 ```mermaid
 stateDiagram-v2

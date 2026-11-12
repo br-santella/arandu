@@ -41,7 +41,7 @@ Regras:
 
 ## Matriz de acesso (RLS)
 
-Estado: 🟡 Escrito, não testado. Fonte: [`20261112000100_rls.sql`](../../supabase/migrations/20261112000100_rls.sql).
+Estado: 🟢 Implementado (13 testes pgTAP passando). Fonte: [`20261112000100_rls.sql`](../../supabase/migrations/20261112000100_rls.sql).
 
 | Tabela | `anon` | Usuário (anônimo autenticado) | Curador | Service role |
 | --- | --- | --- | --- | --- |

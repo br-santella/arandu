@@ -1,6 +1,6 @@
 # 02 — Modelo de dados
 
-Estado: 🟡 **Escrito, não testado.** Fonte de verdade: [`supabase/migrations/`](../../supabase/migrations/). A descrição de produto de cada entidade está em [`docs/05-modelo-de-dados.md`](../05-modelo-de-dados.md).
+Estado: 🟢 **Implementado** (migrations aplicadas e testadas localmente). Fonte de verdade: [`supabase/migrations/`](../../supabase/migrations/). A descrição de produto de cada entidade está em [`docs/05-modelo-de-dados.md`](../05-modelo-de-dados.md).
 
 ## Diagrama de classes (UML)
 

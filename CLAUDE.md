@@ -50,7 +50,8 @@ Equipe: Brunna Santella Souza (produto, app, parcerias) e Grazielle Florentino d
 cd apps/mobile && npm install && npx expo start
 
 # banco local
-supabase start && supabase db reset   # aplica migrations e seed
+npx supabase start && npx supabase db reset   # aplica migrations e seed
+npx supabase test db                            # testes pgTAP (RLS e guarda do guia)
 
 # modelos abertos locais (Ollama) — tags exatas definidas em .env
 ollama pull "$LLM_MODEL" && ollama pull bge-m3
