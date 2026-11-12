@@ -22,6 +22,7 @@ Equipe: Brunna Santella Souza (produto, app, parcerias) e Grazielle Florentino d
 | `docs/06-pipeline-de-ia.md` | Pipeline "revelar" (documentos → pontos) e guia "mediar" (RAG) |
 | `docs/07-conteudo-curadoria-e-etica.md` | Regras de conteúdo, validação comunitária, privacidade, licenças |
 | `docs/08-backlog.md` | Marcos e tarefas em ordem de execução |
+| `docs/09-roteiro-pesquisa-m1.md` | Roteiro de pesquisa do conteúdo do piloto com o Claude chat e formato do seed |
 | `docs/decisoes.md` | Registro datado de decisões |
 | `docs/arquitetura/` | Documentação técnica: diagramas UML e de arquitetura (Mermaid), segurança, fluxos, histórico |
 

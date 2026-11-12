@@ -17,6 +17,7 @@
 | 2026-11-12 | Paleta de texto testada automaticamente contra WCAG AA (4,5:1) | Acessibilidade garantida por teste, não por revisão manual |
 | 2026-11-12 | Supabase CLI 3.1.0 via `npx`; login anônimo ativado no `config.toml` | Sem instalação global; usuário anônimo é a base da privacidade (docs/04, decisão 4) |
 | 2026-11-12 | Projeto Supabase remoto `pgdrpfauuxaxvvnqozzv` (plano gratuito). Valores públicos em `.env.remote` (fora do git); secret key, service role e senha do banco nunca no repositório nem no chat | Separar ambiente local e remoto; chaves secretas só em `supabase secrets` e `.env` |
+| 2026-11-12 | Formato do seed: um JSON por ponto em `supabase/seed/points/`, topônimos em `supabase/seed/toponyms.json`, com bloco `review` (quem pesquisou, quem verificou, texto com referências) | Evita conflitos de edição; mantém a rastreabilidade de cada frase até a fonte (docs/09) |
 | 2026-11-12 | **LLM: `qwen3.5:9b`** (Q4_K_M, Apache 2.0), ID Ollama `56671c2ab938` | Cabe inteiro na GPU de 8 GB (≈6,4 GB em uso, contexto 4096); `gemma4:12b` ocupa ≈8 GB e iria parcialmente para a CPU. Trocar quando a avaliação da doc 06 mostrar necessidade |
 | 2026-11-12 | Raciocínio desligado (`reasoning_effort: "none"`) na extração | Teste real: 115 s com raciocínio vs. 4,5 s sem, ambos com JSON válido e trechos literais |
 | 2026-11-12 | Penalidades forçadas a 0 (`presence_penalty`, `frequency_penalty`) | O pacote do `qwen3.5:9b` vem com `presence_penalty` 1,5, que induz a reescrever o texto e quebraria a regra de trecho literal |
