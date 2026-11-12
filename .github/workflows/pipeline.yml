@@ -1,0 +1,29 @@
+name: pipeline
+
+on:
+  pull_request:
+    paths: ["pipeline/**", ".github/workflows/pipeline.yml"]
+  push:
+    branches: [main]
+    paths: ["pipeline/**", ".github/workflows/pipeline.yml"]
+
+concurrency:
+  group: pipeline-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: pipeline
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv sync --locked
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run pytest -q

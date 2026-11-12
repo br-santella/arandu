@@ -1,0 +1,25 @@
+name: database
+
+on:
+  pull_request:
+    paths: ["supabase/**", ".github/workflows/database.yml"]
+  push:
+    branches: [main]
+    paths: ["supabase/**", ".github/workflows/database.yml"]
+
+concurrency:
+  group: database-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 3.1.0
+      # Only the database container: faster and cheaper than the full stack.
+      - run: supabase db start
+      - run: supabase test db
