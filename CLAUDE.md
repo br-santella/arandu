@@ -25,6 +25,7 @@ Equipe: Brunna Santella Souza (produto, app, parcerias) e Grazielle Florentino d
 | `docs/09-roteiro-pesquisa-m1.md` | Roteiro de pesquisa do conteúdo do piloto com o Claude chat e formato do seed |
 | `docs/decisoes.md` | Registro datado de decisões |
 | `docs/arquitetura/` | Documentação técnica: diagramas UML e de arquitetura (Mermaid), segurança, fluxos, histórico |
+| `docs/learning/` | Trilha de estudo para quem tem só conhecimento básico: conceitos, serviços, IA, segurança e workflow explicados passo a passo |
 
 ## Regras inegociáveis
 
@@ -69,4 +70,5 @@ cd pipeline && uv sync && uv run pytest
 - Siga a ordem do `docs/08-backlog.md`, salvo pedido contrário.
 - Quando uma decisão não estiver documentada, registre-a em `docs/decisoes.md` (data, decisão, motivo).
 - **A documentação é parte essencial do projeto.** Toda alteração que mude esquema, RLS, fluxos, componentes, integrações ou infraestrutura atualiza, **no mesmo commit**, os diagramas e textos de `docs/arquitetura/`, o selo de estado (🟢/🟡/⚪) e uma linha em `docs/arquitetura/historico.md`. Regras completas em `docs/arquitetura/README.md`. Ao final de cada tarefa, confira se algum documento ficou desatualizado.
+- **A trilha `docs/learning/` acompanha a evolução do projeto.** Quando uma mudança introduzir um conceito, serviço, ferramenta ou fluxo novo, ou mudar um existente, atualize o documento correspondente de `docs/learning/` (explicando o conceito para quem só tem conhecimento básico), o glossário, os selos de estado e o histórico de revisões em `docs/learning/README.md`, no mesmo commit.
 - Se uma tarefa exigir conteúdo histórico que não está no seed, pare e peça o conteúdo à equipe.

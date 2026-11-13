@@ -42,7 +42,8 @@ Uma divergência é um defeito de documentação: corrija o documento no mesmo c
   1. atualiza o(s) diagrama(s) e o texto afetados;
   2. atualiza o selo de estado;
   3. adiciona uma linha em [`historico.md`](historico.md);
-  4. se for uma decisão nova, registra também em [`docs/decisoes.md`](../decisoes.md).
+  4. se for uma decisão nova, registra também em [`docs/decisoes.md`](../decisoes.md);
+  5. se introduzir ou mudar um conceito, atualiza a trilha de estudo em [`docs/learning/`](../learning/README.md).
 - Diagramas são escritos em **Mermaid** dentro do Markdown. Nada de imagens exportadas: texto é versionável e revisável em PR.
 - Para visualizar no VS Code, instale a extensão recomendada em `.vscode/extensions.json` (Markdown Preview Mermaid Support). O GitHub renderiza Mermaid nativamente.
 - Nomes de tabelas, campos e funções aparecem exatamente como no código (inglês). Explicações em português.
