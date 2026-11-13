@@ -66,8 +66,9 @@ Estado: ⚪ Planejado (M2–M3).
 stateDiagram-v2
   direction LR
   [*] --> apagado
-  apagado --> descoberto_remoto : exploração remota
-  apagado --> descoberto_presencial : chegou no raio do ponto
+  apagado --> cartao_aberto : toque no ponto (remoto) ou chegada no raio (presencial)
+  cartao_aberto --> descoberto_remoto : fechou o cartão, modo remoto
+  cartao_aberto --> descoberto_presencial : fechou o cartão, modo presencial
   descoberto_remoto --> descoberto_presencial : visitou depois
   descoberto_remoto --> descoberto_remoto : respondeu desafio
   descoberto_presencial --> descoberto_presencial : respondeu desafio
@@ -80,6 +81,9 @@ stateDiagram-v2
   end note
 ```
 
+- O ponto acende ao **fechar o cartão**, com ou sem resposta ao desafio (leitura faz parte do ciclo).
+- Exploração remota libera **todos** os pontos publicados e **nunca pede permissão de localização**.
+- Remoto e presencial valem o mesmo na meta semanal e nas áreas acesas; a diferença é só visual e no rótulo em texto ("Descoberto à distância" / "Visitado").
 - Persistência: `discovery.mode` (`remota` ou `presencial`) e `discovery.challenge_correct`.
 - Errar o desafio não bloqueia: o ponto acende de qualquer forma; acertar dá um selo extra.
 - O usuário pode apagar o próprio progresso (LGPD).

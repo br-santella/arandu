@@ -4,6 +4,7 @@ Uma linha por mudança que afete esta pasta. Mais recente no topo.
 
 | Data | Mudança | Documentos afetados |
 | --- | --- | --- |
+| 2026-11-12 | Regras da exploração remota: todos os pontos liberados, acende ao fechar o cartão, peso igual na meta, sem permissão de localização | 03 |
 | 2026-11-12 | Modelos definidos: `qwen3.5:9b` (raciocínio desligado, penalidades zeradas) e `qwen3-embedding:0.6b` (instrução só na consulta); `bge-m3` vira reserva | 01, 04, doc 04 |
 | 2026-11-12 | Migrations aplicadas no remoto; RLS confirmada pela API pública (tabelas internas retornam vazio); CI e keep-alive verdes no GitHub | 01 |
 | 2026-11-12 | Projeto Supabase remoto criado (plano gratuito); chaves no formato novo (publishable key); variável renomeada para `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`; keep-alive envia só o header `apikey` | 05 |
