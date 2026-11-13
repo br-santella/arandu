@@ -85,5 +85,18 @@ stateDiagram-v2
 - Exploração remota libera **todos** os pontos publicados e **nunca pede permissão de localização**.
 - Remoto e presencial valem o mesmo na meta semanal e nas áreas acesas; a diferença é só visual e no rótulo em texto ("Descoberto à distância" / "Visitado").
 - Persistência: `discovery.mode` (`remota` ou `presencial`) e `discovery.challenge_correct`.
+
+### Revelação hierárquica
+
+Cada descoberta acende a célula do lugar (H3 res. 9) e aumenta o brilho das áreas que contêm o ponto:
+
+| Nível | H3 | Área média | Zoom em que aparece | Brilho |
+| --- | --- | --- | --- | --- |
+| Lugar | 9 | ≈ 0,1 km² | todos | contorno (remota) ou preenchimento (presencial) |
+| Bairro | 7 | ≈ 5 km² | 8 a 13 | proporção descobertos ÷ publicados na área |
+| Cidade | 4 | ≈ 1.770 km² | 4,5 a 9 | idem |
+| Estado/região | 2 | ≈ 87 mil km² | 0 a 5,5 | idem |
+
+Áreas com pontos ainda não descobertos têm contorno tênue. Os hexágonos aproximam os níveis; não são limites administrativos.
 - Errar o desafio não bloqueia: o ponto acende de qualquer forma; acertar dá um selo extra.
 - O usuário pode apagar o próprio progresso (LGPD).

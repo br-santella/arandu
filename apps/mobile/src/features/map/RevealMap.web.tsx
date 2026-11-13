@@ -12,7 +12,15 @@ import { useEffect, useMemo, useRef } from 'react';
 
 import { colors, palette } from '../../theme/colors';
 import { FOG_OPACITY, mapColors, STYLE_OVERRIDES } from './mapTheme';
-import { fogGeoJSON, litCells, litCellsGeoJSON, pointsGeoJSON } from './reveal';
+import {
+  REVEAL_LEVELS,
+  areaProgress,
+  areaProgressGeoJSON,
+  fogGeoJSON,
+  litCells,
+  litCellsGeoJSON,
+  pointsGeoJSON,
+} from './reveal';
 import type { RevealMapProps } from './RevealMap.types';
 
 // Worker file copied to public/ by scripts/copy-maplibre-worker.mjs.
@@ -38,6 +46,10 @@ export function RevealMap({ points, discoveries, onPointPress, focus }: RevealMa
       fog: fogGeoJSON(cells),
       cells: litCellsGeoJSON(cells),
       points: pointsGeoJSON(points, discoveries),
+      areas: REVEAL_LEVELS.map((level) => ({
+        level,
+        geojson: areaProgressGeoJSON(areaProgress(points, discoveries, level.resolution), level.id),
+      })),
     };
   }, [points, discoveries]);
   const latest = useRef(data);
@@ -87,6 +99,44 @@ export function RevealMap({ points, discoveries, onPointPress, focus }: RevealMa
         // Dims unrevealed areas; revealed cells (holes) read as brighter ("lit").
         paint: { 'fill-color': mapColors.fog, 'fill-opacity': FOG_OPACITY },
       }, firstLabel);
+      // Larger areas glow in proportion to the share of their points discovered.
+      // Each level is drawn only in its zoom range; ranges overlap for smooth transitions.
+      for (const { level, geojson } of latest.current.areas) {
+        const source = `area-${level.id}`;
+        m.addSource(source, { type: 'geojson', data: geojson });
+        m.addLayer({
+          id: `${source}-glow`,
+          type: 'fill',
+          source,
+          minzoom: level.minZoom,
+          maxzoom: level.maxZoom,
+          paint: {
+            'fill-color': palette.ochre,
+            // 0%: no glow. From the first discovery, a visible baseline (0.14)
+            // that grows linearly to 0.45 at 100%, so progress is felt early.
+            'fill-opacity': [
+              'case',
+              ['==', ['get', 'ratio'], 0],
+              0,
+              ['+', 0.14, ['*', 0.31, ['get', 'ratio']]],
+            ],
+          },
+        }, firstLabel);
+        m.addLayer({
+          id: `${source}-outline`,
+          type: 'line',
+          source,
+          minzoom: level.minZoom,
+          maxzoom: level.maxZoom,
+          paint: {
+            'line-color': palette.ochre,
+            // Faint outline even at 0%: shows there is something to discover here.
+            'line-opacity': ['interpolate', ['linear'], ['get', 'ratio'], 0, 0.25, 1, 0.8],
+            'line-width': 1.2,
+          },
+        }, firstLabel);
+      }
+
       m.addLayer({
         id: 'cells-fill',
         type: 'fill',
@@ -145,6 +195,9 @@ export function RevealMap({ points, discoveries, onPointPress, focus }: RevealMa
     (m.getSource('fog') as GeoJSONSource | undefined)?.setData(data.fog);
     (m.getSource('cells') as GeoJSONSource | undefined)?.setData(data.cells);
     (m.getSource('points') as GeoJSONSource | undefined)?.setData(data.points);
+    for (const { level, geojson } of data.areas) {
+      (m.getSource(`area-${level.id}`) as GeoJSONSource | undefined)?.setData(geojson);
+    }
   }, [data]);
 
   // Fly to the focused point so its cell is visible when it lights up.

@@ -51,6 +51,7 @@ O projeto está em construção. Cada seção indica o estado do que descreve:
 
 | Data | O que mudou | Documentos |
 | --- | --- | --- |
+| 2026-11-12 | Revelação hierárquica (bairro, cidade, estado) com hierarquia do H3 | 02 |
 | 2026-11-12 | Paleta noturna, ordem das camadas e o bug de atualização descartada (`isStyleLoaded`) | 02 |
 | 2026-11-12 | Mapa web implementado: arquivos por plataforma, GeoJSON e camadas, névoa com buracos, worker do maplibre, verificação com navegador, SPA | 02 |
 | 2026-11-12 | Criação da trilha, refletindo o fim do M0 (fundação) e as decisões do M2 (exploração remota) | Todos |

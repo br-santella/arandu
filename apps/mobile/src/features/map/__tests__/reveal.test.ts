@@ -1,6 +1,11 @@
+import { cellToChildren, cellToLatLng, cellToParent, latLngToCell } from 'h3-js';
+
 import {
   type Discovery,
   type MapPoint,
+  REVEAL_LEVELS,
+  areaProgress,
+  areaProgressGeoJSON,
   cellForPoint,
   fogGeoJSON,
   litCells,
@@ -86,5 +91,60 @@ describe('GeoJSON builders', () => {
   it('marks undiscovered points as apagado', () => {
     const fc = pointsGeoJSON([A, B], [{ pointId: 'a', mode: 'remota' }]);
     expect(fc.features.map((f) => f.properties.mode)).toEqual(['remota', 'apagado']);
+  });
+});
+
+describe('areaProgress (hierarchical reveal)', () => {
+  // Three points inside the same bairro-level cell (built from its children,
+  // so the test never depends on where cell borders fall) and one far away.
+  const bairro = latLngToCell(0, 0, 7);
+  const [near1, near2, near3] = cellToChildren(bairro, 9)
+    .slice(0, 3)
+    .map((cell, i) => {
+      const [lat, lng] = cellToLatLng(cell);
+      return p(`n${i + 1}`, lat, lng);
+    });
+  const far = p('f', 10, 10);
+  const all = [near1, near2, near3, far];
+
+  it('computes discovered / total per area', () => {
+    const prog = areaProgress(all, [{ pointId: 'n1', mode: 'remota' }], 7);
+    const nearArea = prog.get(cellToParent(cellForPoint(near1), 7));
+    expect(nearArea).toEqual({ discovered: 1, total: 3, ratio: 1 / 3 });
+  });
+
+  it('lists areas with nothing discovered yet (ratio 0), so goals are visible', () => {
+    const prog = areaProgress(all, [{ pointId: 'n1', mode: 'remota' }], 7);
+    const farArea = prog.get(cellToParent(cellForPoint(far), 7));
+    expect(farArea).toEqual({ discovered: 0, total: 1, ratio: 0 });
+  });
+
+  it('counts remote and presencial the same', () => {
+    const remote = areaProgress(all, [{ pointId: 'n1', mode: 'remota' }], 4);
+    const visit = areaProgress(all, [{ pointId: 'n1', mode: 'presencial' }], 4);
+    expect([...remote]).toEqual([...visit]);
+  });
+
+  it('larger levels aggregate more points', () => {
+    for (const level of REVEAL_LEVELS) {
+      const prog = areaProgress(all, [], level.resolution);
+      const total = [...prog.values()].reduce((sum, a) => sum + a.total, 0);
+      expect(total).toBe(all.length); // every point belongs to exactly one area
+    }
+  });
+
+  it('reaches ratio 1 when every point of the area is discovered', () => {
+    const ds: Discovery[] = ['n1', 'n2', 'n3'].map((id) => ({ pointId: id, mode: 'remota' }));
+    const prog = areaProgress(all, ds, 7);
+    expect(prog.get(cellToParent(cellForPoint(near1), 7))?.ratio).toBe(1);
+  });
+
+  it('builds closed polygons with level and progress', () => {
+    const fc = areaProgressGeoJSON(areaProgress(all, [], 7), 'bairro');
+    expect(fc.features.length).toBeGreaterThan(0);
+    const f = fc.features[0];
+    expect(f.properties.level).toBe('bairro');
+    const ring = f.geometry.coordinates[0];
+    expect(ring[0]).toEqual(ring[ring.length - 1]);
   });
 });

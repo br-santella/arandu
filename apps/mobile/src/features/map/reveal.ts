@@ -1,9 +1,11 @@
 // Map reveal rules (docs/03, docs/decisoes.md):
 // - each discovered point lights the H3 cell that contains it;
 // - presencial discoveries are filled, remote ones are outlined;
-// - a later visit promotes remote -> presencial, never the opposite.
+// - a later visit promotes remote -> presencial, never the opposite;
+// - larger areas (bairro, cidade, estado) glow in proportion to the share of
+//   their published points already discovered, so progress shows at any zoom.
 
-import { cellToBoundary, latLngToCell } from 'h3-js';
+import { cellToBoundary, cellToParent, latLngToCell } from 'h3-js';
 
 import type { LatLng } from '../../lib/geo';
 
@@ -98,6 +100,59 @@ export function pointsGeoJSON(points: MapPoint[], discoveries: Discovery[]) {
       type: 'Feature' as const,
       properties: { id: p.id, title: p.title, mode: modes.get(p.id) ?? 'apagado' },
       geometry: { type: 'Point' as const, coordinates: [p.lng, p.lat] },
+    })),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Hierarchical progress (docs/decisoes.md): each larger area glows in proportion
+// to discovered / published points inside it. Remote and presencial count the same.
+// H3 hexagons approximate these areas; they are not administrative boundaries.
+// ---------------------------------------------------------------------------
+
+export type RevealLevel = {
+  id: 'bairro' | 'cidade' | 'estado';
+  resolution: number;
+  /** Zoom range where this level is drawn (overlaps give smooth transitions). */
+  minZoom: number;
+  maxZoom: number;
+};
+
+export const REVEAL_LEVELS: readonly RevealLevel[] = [
+  { id: 'estado', resolution: 2, minZoom: 0, maxZoom: 5.5 }, // ~86,800 km²
+  { id: 'cidade', resolution: 4, minZoom: 4.5, maxZoom: 9 }, // ~1,770 km²
+  { id: 'bairro', resolution: 7, minZoom: 8, maxZoom: 13 }, // ~5.2 km²
+];
+
+export type AreaProgress = { discovered: number; total: number; ratio: number };
+
+/** Progress per parent cell at `resolution`, over all published points. */
+export function areaProgress(
+  points: MapPoint[],
+  discoveries: Discovery[],
+  resolution: number,
+): Map<string, AreaProgress> {
+  const found = new Set(discoveries.map((d) => d.pointId));
+  const areas = new Map<string, AreaProgress>();
+  for (const p of points) {
+    const area = cellToParent(cellForPoint(p), resolution);
+    const a = areas.get(area) ?? { discovered: 0, total: 0, ratio: 0 };
+    a.total += 1;
+    if (found.has(p.id)) a.discovered += 1;
+    a.ratio = a.discovered / a.total;
+    areas.set(area, a);
+  }
+  return areas;
+}
+
+/** GeoJSON for one level: every area with published points, tagged with its progress. */
+export function areaProgressGeoJSON(progress: Map<string, AreaProgress>, level: RevealLevel['id']) {
+  return {
+    type: 'FeatureCollection' as const,
+    features: [...progress].map(([cell, p]) => ({
+      type: 'Feature' as const,
+      properties: { cell, level, ...p },
+      geometry: { type: 'Polygon' as const, coordinates: [cellRing(cell)] },
     })),
   };
 }

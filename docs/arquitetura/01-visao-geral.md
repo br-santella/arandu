@@ -118,7 +118,7 @@ Riscos e mitigações dos planos gratuitos estão em [`docs/04-arquitetura-tecni
 | Testes de RLS e do índice do guia | `supabase/tests/database/rls.test.sql` | 🟢 Implementado |
 | Seed do piloto | `supabase/seed/` | ⚪ Planejado (depende do conteúdo da equipe) |
 | App Expo: base (tema, fontes, rotas, boas-vindas) | `apps/mobile/src/` | 🟢 Implementado (12 testes, typecheck, lint e export web ok; ainda não aberto num aparelho) |
-| App: mapa web com névoa, células H3 e exploração remota | `apps/mobile/src/features/map/`, `src/app/mapa.tsx` | 🟢 Implementado na web (26 testes; verificado com captura de tela num navegador real); usa pontos de teste locais |
+| App: mapa web com névoa, células H3, revelação hierárquica (bairro, cidade, estado) e exploração remota | `apps/mobile/src/features/map/`, `src/app/mapa.tsx` | 🟢 Implementado na web (32 testes; verificado com capturas de tela num navegador real); usa pontos de teste locais |
 | App: proximidade, pontos do Supabase, persistência | `apps/mobile/src/` | ⚪ Planejado (M2: 2.4, 2.5, 2.7) |
 | App: cartão, desafios, progresso, guia | `apps/mobile/src/app/` | ⚪ Planejado (M3–M6) |
 | Painel de curadoria | `apps/admin/` | ⚪ Planejado |

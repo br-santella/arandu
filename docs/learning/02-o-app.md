@@ -186,6 +186,25 @@ Um polígono com buracos tem um anel externo e anéis internos. A névoa é exat
 
 O maplibre-gl processa os tiles num **worker**: um pedaço de JavaScript que roda em paralelo, sem travar a tela. Na versão 6, o worker é um arquivo separado, que o bundler do Expo não copia sozinho. Sem ele, o mapa fica preto. A solução está em `scripts/copy-maplibre-worker.mjs`: a cada `npm install` (pelo script `postinstall`), o worker é copiado para `public/maplibre/`, e o mapa aponta para ele com `setWorkerUrl`.
 
+### Revelação hierárquica: o progresso em todas as escalas
+
+Uma célula de resolução 9 tem alguns quarteirões: no zoom do país ela é invisível. Para que a evolução apareça em qualquer escala, o Arandu usa a **hierarquia do H3**: cada hexágono tem um "pai" maior, e os pais têm pais ainda maiores (`cellToParent`).
+
+| Nível | Resolução | Área média | Aparece no zoom |
+| --- | --- | --- | --- |
+| Lugar | 9 | ≈ 0,1 km² | sempre |
+| Bairro | 7 | ≈ 5 km² | 8 a 13 |
+| Cidade | 4 | ≈ 1.770 km² | 4,5 a 9 |
+| Estado/região | 2 | ≈ 87 mil km² | 0 a 5,5 |
+
+Para cada área, a função `areaProgress` conta **quantos pontos publicados existem ali e quantos já foram descobertos**. O brilho da área é proporcional a essa fração: 1 de 3 descobertos dá um brilho fraco; 3 de 3, um brilho forte. Áreas com pontos ainda não descobertos ganham só um contorno, um convite a explorar.
+
+Exemplo: com 3 pontos em São Paulo e 1 em Brasília, descobrir 1 ponto em São Paulo faz a região de São Paulo brilhar a 33%, enquanto Brasília fica só contornada.
+
+Por que não usar a "área do conhecimento" (por exemplo, o território de uma aldeia)? Porque desenhar essa área seria uma **afirmação histórica** que precisaria de fonte e validação. A proporção de pontos usa apenas o que já foi validado. Os hexágonos também **não são limites oficiais** de bairros, cidades ou estados; isso poderá vir das malhas abertas do IBGE no futuro.
+
+Um detalhe de teste: os pontos de um teste foram construídos a partir dos "filhos" de uma mesma célula (`cellToChildren`). Na primeira versão, pontos a 300 m um do outro caíram em bairros diferentes porque estavam na borda de uma célula, e o teste falhou por causa dos dados, não da lógica.
+
 ### Paleta noturna e ordem das camadas
 
 O estilo `dark` original deixava a terra quase preta e o oceano só um pouco mais claro; com a névoa por cima, mal se via o Brasil. O arquivo `mapTheme.ts` troca as cores de algumas camadas do estilo, no espírito do "modo noturno" dos mapas comerciais: terra cinza-esverdeada, oceano mais escuro, fronteiras e nomes de cidades claros.

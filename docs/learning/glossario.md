@@ -69,6 +69,7 @@ Termos técnicos usados no Arandu, em ordem alfabética. Entre parênteses, o do
 | **Secret key / service role** | Chave que ignora as regras de acesso; nunca vai para o app (4) |
 | **Secrets** | Valores sensíveis guardados num serviço (GitHub, Supabase), fora do código (4, 7) |
 | **Security definer** | Função do banco que roda com permissão do dono para responder uma pergunta fixa (4) |
+| **Hierarquia do H3** | Cada hexágono H3 tem um "pai" maior em resoluções menores; usado para medir o progresso por bairro, cidade e estado (2) |
 | **Headless** (navegador) | Navegador rodando sem janela, controlado por um programa; usado para testar telas (2) |
 | **Seed** | Conteúdo inicial carregado no banco (3) |
 | **Servidor** | Computador que guarda dados e responde aos clientes (1) |

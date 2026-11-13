@@ -4,6 +4,7 @@ Uma linha por mudança que afete esta pasta. Mais recente no topo.
 
 | Data | Mudança | Documentos afetados |
 | --- | --- | --- |
+| 2026-11-12 | Revelação hierárquica: áreas H3 res. 7, 4 e 2 brilham na proporção de pontos descobertos, por faixa de zoom | 01, 03 |
 | 2026-11-12 | Mapa: paleta noturna (`mapTheme.ts`), névoa a 50% abaixo dos rótulos; corrigido descarte de atualizações durante carregamento de tiles | 01 |
 | 2026-11-12 | Mapa web (maplibre-gl 6, OpenFreeMap dark), névoa com buracos por célula H3 (res. 9), contorno para remota e preenchimento para presencial, lista acessível, cartão provisório; protótipo só web | 01 |
 | 2026-11-12 | Regras da exploração remota: todos os pontos liberados, acende ao fechar o cartão, peso igual na meta, sem permissão de localização | 03 |
