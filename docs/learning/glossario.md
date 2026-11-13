@@ -36,6 +36,7 @@ Termos técnicos usados no Arandu, em ordem alfabética. Entre parênteses, o do
 | **GPU / VRAM** | Placa de vídeo e sua memória; onde os modelos de IA rodam rápido (5) |
 | **H3** | Grade de hexágonos que cobre o planeta; usada para acender áreas do mapa (2) |
 | **Haversine** | Fórmula da distância entre dois pontos na superfície da Terra (2) |
+| **IBGE, malhas** | Contornos oficiais de estados e municípios publicados pelo IBGE (3) |
 | **Índice** | Estrutura que acelera buscas no banco (3) |
 | **JSON** | Formato de texto para dados estruturados (5) |
 | **JSON Schema** | Descrição do formato que um JSON deve ter (5) |
@@ -50,6 +51,7 @@ Termos técnicos usados no Arandu, em ordem alfabética. Entre parênteses, o do
 | **OCR** | Transformar a imagem de um texto em texto digital (5) |
 | **Ollama** | Programa que roda modelos de IA abertos no próprio computador (5) |
 | **Parâmetros** (de um modelo) | Os bilhões de números aprendidos no treino; "9B" = 9 bilhões (5) |
+| **Point-in-polygon** | Operação que responde se um ponto está dentro de um polígono; usada para achar o estado e o município de cada ponto (3) |
 | **pgTAP** | Ferramenta para escrever testes em SQL (3) |
 | **pgvector** | Extensão do Postgres para guardar e buscar vetores (5) |
 | **Pipeline** | Sequência de etapas que processa algo; no Arandu, de documento a proposta (5, 6) |
@@ -66,6 +68,7 @@ Termos técnicos usados no Arandu, em ordem alfabética. Entre parênteses, o do
 | **Repositório** | A pasta do projeto, com histórico controlado pelo Git (1, 7) |
 | **RLS** (Row Level Security) | Regras do banco que filtram linhas conforme quem pergunta (4) |
 | **Rota** | Endereço de uma tela no app (2) |
+| **security_invoker** | Opção de view que faz a consulta rodar com as permissões de quem pergunta, mantendo a RLS (3) |
 | **Secret key / service role** | Chave que ignora as regras de acesso; nunca vai para o app (4) |
 | **Secrets** | Valores sensíveis guardados num serviço (GitHub, Supabase), fora do código (4, 7) |
 | **Security definer** | Função do banco que roda com permissão do dono para responder uma pergunta fixa (4) |
@@ -78,6 +81,7 @@ Termos técnicos usados no Arandu, em ordem alfabética. Entre parênteses, o do
 | **Slug** | Identificador legível usado em endereços: `nome-do-lugar` (2) |
 | **SQL** | Linguagem para criar e consultar bancos de dados relacionais (3) |
 | **Supabase** | Plataforma com banco, login, API, arquivos e funções prontos (3) |
+| **TanStack Query** | Biblioteca que busca dados do servidor e os guarda em cache, cuidando de carregamento, erro e nova tentativa (2) |
 | **Temperature** | Quanto aleatória é a escolha de tokens; 0 = sempre o mais provável (5) |
 | **Tiles** | Pedaços quadrados de um mapa digital, carregados sob demanda (2) |
 | **Token** (de um modelo) | Pedaço de palavra que o modelo processa (5) |
@@ -86,6 +90,7 @@ Termos técnicos usados no Arandu, em ordem alfabética. Entre parênteses, o do
 | **TypeScript** | JavaScript com tipos (2) |
 | **UUID** | Identificador longo e aleatório, praticamente impossível de repetir (3) |
 | **Variável de ambiente** | Configuração lida de fora do código, como do arquivo `.env` (4) |
+| **View** | Consulta SQL salva com nome, usada como uma tabela (3) |
 | **Vetor** | Lista ordenada de números; ver embedding (5) |
 | **WCAG** | Norma internacional de acessibilidade web; exige contraste de 4,5:1 para texto (2) |
 | **Worker** | Código JavaScript que roda em paralelo, sem travar a tela; o mapa usa um para os tiles (2) |

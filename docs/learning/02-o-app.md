@@ -148,19 +148,50 @@ it('matches known WCAG reference values', () => {
 
 ## 2.8 O mapa (M2)
 
-Estado: 🟢 **na web**: mapa, névoa, células H3 e exploração remota, com pontos de teste. ⚪ Proximidade, pontos vindos do Supabase e salvamento das descobertas vêm nos próximos passos. No celular, o mapa mostra por enquanto um aviso: o protótipo é **só web** até ser validado.
+Estado: 🟢 **na web**: mapa, estados e municípios oficiais que acendem em gradiente, pontos acesos e exploração remota, **lendo os pontos publicados do Supabase**. ⚪ Proximidade (localização do navegador) e salvamento das descobertas vêm nos próximos passos. No celular, o mapa mostra por enquanto um aviso: o protótipo é **só web** até ser validado.
+
+### O que a pessoa vê em cada zoom
+
+| Zoom | O que aparece | Como "acende" |
+| --- | --- | --- |
+| **País** | Contornos oficiais dos **estados** que têm pontos | Brilho de 0% a 100%, proporcional a pontos descobertos ÷ pontos publicados no estado |
+| **Região** | Contornos oficiais dos **municípios** que têm pontos | O mesmo, por município |
+| **Dentro da cidade** | **Só os pontos**, sem áreas | Ponto cinza (a descobrir), **anel** ocre (descoberto à distância) ou ponto ocre **cheio** (visitado) |
+
+Exemplo: com 3 pontos no estado de São Paulo e 1 no Distrito Federal, descobrir 1 ponto em São Paulo faz o estado de São Paulo brilhar a 33%, e o Distrito Federal fica só com um contorno tênue, um convite a explorar.
 
 ### Os arquivos do mapa
 
 | Arquivo | Papel |
 | --- | --- |
-| `src/lib/geo.ts` | Distância entre dois pontos (haversine) e teste de raio |
-| `src/features/map/reveal.ts` | Regras da revelação: célula de cada ponto, promoção remota → presencial, névoa e camadas em GeoJSON |
+| `src/lib/supabase.ts` | Cliente do Supabase (só a publishable key) |
+| `src/features/map/api.ts` | Busca pontos publicados e áreas no Supabase |
+| `src/features/map/reveal.ts` | Regras: progresso por estado e município, promoção remota → presencial, GeoJSON |
 | `src/features/map/RevealMap.web.tsx` | O mapa no navegador (maplibre-gl) |
 | `src/features/map/RevealMap.tsx` | Versão para celular (por enquanto, só um aviso) |
+| `src/features/map/mapTheme.ts` | Paleta noturna sobre o estilo do mapa |
 | `src/features/map/PointSheet.tsx` | Cartão provisório; fechar o cartão acende o ponto |
-| `src/features/map/fixtures.ts` | Pontos de **teste**, fictícios, até o app ler do Supabase |
-| `src/app/mapa.tsx` | A tela: mapa, contador, lista acessível de pontos |
+| `src/lib/geo.ts` | Distância (haversine) e teste de raio, para o modo "perto de mim" |
+| `src/app/mapa.tsx` | A tela: mapa, contador, lista acessível, avisos de carregamento e erro |
+
+### De onde vêm os dados
+
+O app faz **duas perguntas** ao Supabase, por duas *views* do banco (ver [documento 3](03-banco-de-dados-e-supabase.md)):
+
+1. `published_point`: os pontos publicados, já com latitude, longitude e os códigos IBGE do estado e do município;
+2. `area_with_points`: só os estados e municípios **que têm pontos publicados**, com o contorno em GeoJSON.
+
+Com os pontos de teste, a segunda resposta tem cerca de **9 KB**, em vez dos 2,5 MB que seriam os contornos do Brasil inteiro.
+
+O app usa o **TanStack Query** para buscar e guardar esses dados em memória (*cache*). Ele cuida de "carregando", "deu erro" e "tentar de novo", e evita buscar de novo à toa: os dados do mapa mudam pouco, então ficam válidos por 5 minutos.
+
+As variáveis do Supabase para o app ficam em `apps/mobile/.env`, porque o Expo lê o `.env` da pasta do próprio app. Como as outras, ele fica fora do Git.
+
+### O progresso por área
+
+A função `areaProgress` percorre os pontos publicados e, para cada estado (ou município), conta **quantos existem** e **quantos a pessoa já descobriu**. A fração vira o brilho da área: `opacidade = 0,55 × fração`. Descobertas remotas e presenciais contam igual.
+
+Essa mesma conta, feita no servidor e somando muitos estudantes, é a base dos futuros **relatórios por estado e cidade** para escolas e secretarias. Eles serão sempre agregados, com um número mínimo de estudantes por grupo, para ninguém ser identificável.
 
 ### Arquivos por plataforma
 
@@ -168,95 +199,75 @@ Repare nos nomes `RevealMap.web.tsx` e `RevealMap.tsx`. O bundler do Expo escolh
 
 ### Lógica separada da tela
 
-Toda a regra do jogo está em funções puras (`reveal.ts`, `geo.ts`), que recebem dados e devolvem dados, sem desenhar nada. Por isso são fáceis de testar: 14 testes conferem, por exemplo, que uma visita promove uma descoberta remota a presencial e nunca o contrário. Um desses testes pegou um bug real: o anel do hexágono saía com o último ponto repetido.
+Toda a regra do jogo está em funções puras (`reveal.ts`, `geo.ts`, `api.ts`), que recebem dados e devolvem dados, sem desenhar nada. Por isso são fáceis de testar: os testes conferem, por exemplo, a fração de cada estado e município, que remoto e presencial contam igual, e que uma visita promove uma descoberta remota a presencial, nunca o contrário.
 
 ### GeoJSON e camadas
 
-**GeoJSON** é um formato JSON para geometrias: pontos, linhas e polígonos com coordenadas `[longitude, latitude]` (nessa ordem!). O mapa recebe três "fontes" GeoJSON e desenha cada uma como **camada**:
+**GeoJSON** é um formato JSON para geometrias: pontos, linhas e polígonos com coordenadas `[longitude, latitude]` (nessa ordem!). O mapa desenha cada "fonte" de dados como **camadas**, de baixo para cima:
 
-| Fonte | Camada | Como aparece |
-| --- | --- | --- |
-| `fog` | um polígono do tamanho do mundo **com um buraco para cada célula acesa** | névoa escura; onde há buraco, o mapa aparece |
-| `cells` | um hexágono por célula acesa | contorno ocre (remota) e preenchimento ocre (presencial) |
-| `points` | um ponto por local | cinza apagado ou ocre aceso, com brilho |
+| Fonte | Camada | Como aparece | Zoom |
+| --- | --- | --- | --- |
+| `veil` | um polígono do tamanho do mundo | véu escuro leve: o Brasil "apagado" | todos |
+| `area-estado` | contornos dos estados com pontos | brilho ocre proporcional + contorno | 0 a 6 |
+| `area-municipio` | contornos dos municípios com pontos | brilho ocre proporcional + contorno | 5 a 10 |
+| `points` | um círculo por ponto | cinza, anel ocre ou ocre cheio, com brilho | todos |
 
-Um polígono com buracos tem um anel externo e anéis internos. A névoa é exatamente isso: o mundo inteiro menos as células descobertas.
+As faixas de zoom de estados e municípios se sobrepõem um pouco, para a transição ser suave.
+
+### Paleta noturna e ordem das camadas
+
+O estilo `dark` original deixava a terra quase preta e o oceano só um pouco mais claro; mal se via o Brasil. O arquivo `mapTheme.ts` troca as cores de algumas camadas do estilo, no espírito do "modo noturno" dos mapas comerciais: terra cinza-esverdeada, oceano mais escuro, fronteiras e nomes de cidades claros.
+
+A **ordem das camadas** importa: o véu e as áreas são inseridos **antes da primeira camada de rótulos**, então os nomes ficam sempre por cima e legíveis.
 
 ### O worker do maplibre
 
 O maplibre-gl processa os tiles num **worker**: um pedaço de JavaScript que roda em paralelo, sem travar a tela. Na versão 6, o worker é um arquivo separado, que o bundler do Expo não copia sozinho. Sem ele, o mapa fica preto. A solução está em `scripts/copy-maplibre-worker.mjs`: a cada `npm install` (pelo script `postinstall`), o worker é copiado para `public/maplibre/`, e o mapa aponta para ele com `setWorkerUrl`.
 
-### Revelação hierárquica: o progresso em todas as escalas
+### Como o mapa evoluiu (e por quê)
 
-Uma célula de resolução 9 tem alguns quarteirões: no zoom do país ela é invisível. Para que a evolução apareça em qualquer escala, o Arandu usa a **hierarquia do H3**: cada hexágono tem um "pai" maior, e os pais têm pais ainda maiores (`cellToParent`).
+Esta seção registra as versões anteriores, porque elas ensinam tanto quanto a atual.
 
-| Nível | Resolução | Área média | Aparece no zoom |
-| --- | --- | --- | --- |
-| Lugar | 9 | ≈ 0,1 km² | sempre |
-| Bairro | 7 | ≈ 5 km² | 8 a 13 |
-| Cidade | 4 | ≈ 1.770 km² | 4,5 a 9 |
-| Estado/região | 2 | ≈ 87 mil km² | 0 a 5,5 |
+1. **Células H3 fixas.** Primeiro, cada ponto acendia um hexágono da grade **H3** (uma grade de hexágonos que cobre o planeta, com várias resoluções) de cerca de 0,1 km². Problema: no zoom do país, a célula era invisível.
+2. **Hierarquia do H3.** Depois, hexágonos maiores (bairro, cidade, estado aproximados) brilhavam na proporção de pontos descobertos. Funcionava, mas os hexágonos **não eram os limites reais**: o estado de São Paulo ficava coberto por uns 3 hexágonos.
+3. **Limites oficiais do IBGE (atual).** A equipe decidiu usar os **contornos oficiais** de estados e municípios na vista ampla e, dentro da cidade, mostrar **só os pontos**. A diferença entre remoto e presencial passou da célula para o próprio ponto (anel × cheio).
 
-Para cada área, a função `areaProgress` conta **quantos pontos publicados existem ali e quantos já foram descobertos**. O brilho da área é proporcional a essa fração: 1 de 3 descobertos dá um brilho fraco; 3 de 3, um brilho forte. Áreas com pontos ainda não descobertos ganham só um contorno, um convite a explorar.
+A ideia de revelar uma área ligada ao **tipo de conhecimento** (por exemplo, o território de uma aldeia) foi deixada para depois do protótipo, porque desenhar essa área seria uma **afirmação histórica** que precisa de fonte e de validação comunitária.
 
-Exemplo: com 3 pontos em São Paulo e 1 em Brasília, descobrir 1 ponto em São Paulo faz a região de São Paulo brilhar a 33%, enquanto Brasília fica só contornada.
+### Bugs que só a revisão humana e o navegador pegaram
 
-Por que não usar a "área do conhecimento" (por exemplo, o território de uma aldeia)? Porque desenhar essa área seria uma **afirmação histórica** que precisaria de fonte e validação. A proporção de pontos usa apenas o que já foi validado. Os hexágonos também **não são limites oficiais** de bairros, cidades ou estados; isso poderá vir das malhas abertas do IBGE no futuro.
+- **Pontos "descobertos" que não acendiam.** Antes de atualizar o desenho, o código conferia `isStyleLoaded()`, que devolve falso **enquanto há tiles carregando** (por exemplo, durante o voo até um ponto). A atualização era descartada em silêncio. A correção foi tirar essa condição. O cenário foi reproduzido no navegador automatizado para confirmar.
+- **Mapa preto:** o worker ausente (ver acima).
+- **"Acender" parecendo "apagar":** uma névoa clara demais deixava a área revelada mais escura que o entorno.
 
-Um detalhe de teste: os pontos de um teste foram construídos a partir dos "filhos" de uma mesma célula (`cellToChildren`). Na primeira versão, pontos a 300 m um do outro caíram em bairros diferentes porque estavam na borda de uma célula, e o teste falhou por causa dos dados, não da lógica.
+### Como o mapa é verificado
 
-### Paleta noturna e ordem das camadas
-
-O estilo `dark` original deixava a terra quase preta e o oceano só um pouco mais claro; com a névoa por cima, mal se via o Brasil. O arquivo `mapTheme.ts` troca as cores de algumas camadas do estilo, no espírito do "modo noturno" dos mapas comerciais: terra cinza-esverdeada, oceano mais escuro, fronteiras e nomes de cidades claros.
-
-A **ordem das camadas** também importa: o mapa desenha de baixo para cima. A névoa e as células são inseridas **antes da primeira camada de rótulos**, então os nomes ficam sempre por cima e legíveis.
-
-### Um bug que só a revisão humana pegou
-
-Na primeira versão, alguns pontos apareciam como "Descoberto à distância" na lista, mas não acendiam no mapa. A causa: antes de atualizar o desenho, o código conferia `isStyleLoaded()`, que devolve falso **enquanto há tiles carregando** (por exemplo, durante o voo até um ponto). Nesse caso, a atualização era descartada em silêncio. A correção foi tirar essa condição: as fontes já existem depois do carregamento inicial, e antes dele o mapa usa os dados mais recentes. O cenário (descobrir pontos com o mapa em movimento) foi reproduzido no navegador automatizado para confirmar a correção.
-
-### Como o mapa foi verificado
-
-Além dos testes, o mapa foi aberto num Chrome sem janela (*headless*), controlado por um script, que clicou nos pontos e tirou capturas de tela. Foi assim que apareceram dois problemas que os testes não pegam: o worker ausente (mapa preto) e a névoa clara demais, que fazia a célula acesa parecer **mais escura** que o entorno.
+Além dos testes, o mapa é aberto num Chrome sem janela (*headless*), controlado por um script, que clica nos pontos da lista, afasta o zoom e tira capturas de tela. É assim que se confere o que os testes não veem: cores, contraste, ordem das camadas e se o desenho acompanha o estado do app.
 
 ### SPA e hospedagem
 
 A versão web é uma **SPA** (single-page application): um único `index.html` carrega o app, e o próprio app troca de tela conforme o endereço. Por isso a hospedagem precisa de um **fallback**: qualquer endereço (como `/mapa`) deve devolver o `index.html`. Sem isso, abrir `/mapa` direto dá erro 404.
 
-### Como foi planejado (e o que falta)
-
 ### Mapas digitais: estilo e tiles
 
 Um mapa digital é desenhado a partir de **tiles** (ladrilhos): pedaços quadrados do mapa, carregados conforme você move e aproxima. Um **estilo** diz como desenhar cada coisa (cor das ruas, dos rios, dos rótulos).
 
-- **MapLibre** é a biblioteca de mapas, gratuita e de código aberto. No celular usa `@maplibre/maplibre-react-native`; no navegador, `maplibre-gl`. São duas implementações atrás de um mesmo componente do Arandu.
-- Os tiles virão de um serviço gratuito (por exemplo, OpenFreeMap), configurado em `EXPO_PUBLIC_MAP_STYLE_URL`, para poder trocar de fornecedor sem mexer no código.
+- **MapLibre** é a biblioteca de mapas, gratuita e de código aberto. No navegador, `maplibre-gl`; no celular (depois), `@maplibre/maplibre-react-native`.
+- Os tiles vêm do OpenFreeMap (gratuito, sem chave), configurável em `EXPO_PUBLIC_MAP_STYLE_URL`.
 
-### H3: as células que acendem
+### O que falta no M2 ⚪
 
-**H3** é uma grade de **hexágonos** que cobre o planeta, criada pela Uber e aberta ao público. Cada hexágono tem um identificador, e há várias **resoluções** (tamanhos). Na resolução 9, cada célula tem em média cerca de 0,1 km², algo como alguns quarteirões.
+**Proximidade calculada no aparelho.** No modo "perto de mim", o app vai comparar a posição do aparelho com a de cada ponto, usando a **fórmula de haversine** (distância entre dois pontos numa esfera, já pronta e testada em `geo.ts`). Se a distância for menor que o raio do ponto (`unlock_radius_m`, 75 m por padrão), o ponto é descoberto. **A posição nunca sai do aparelho.** O servidor recebe só "o usuário X descobriu o ponto Y, presencialmente". Ver [documento 4](04-seguranca-e-privacidade.md).
 
-No Arandu, descobrir um ponto **acende a célula** onde ele está. Hexágonos ficam bonitos e regulares no mapa, e a mesma célula sempre corresponde à mesma área, para qualquer usuário.
-
-### Proximidade calculada no aparelho
-
-No modo "perto de mim", o app compara a posição do aparelho com a de cada ponto, usando a **fórmula de haversine** (distância entre dois pontos numa esfera). Se a distância for menor que o raio do ponto (`unlock_radius_m`, 75 m por padrão), o ponto é descoberto.
-
-**A posição nunca sai do aparelho.** O servidor recebe só "o usuário X descobriu o ponto Y, presencialmente". Ver [documento 4](04-seguranca-e-privacidade.md).
-
-### Exploração remota
-
-Regras já decididas (`docs/decisoes.md`):
+**Exploração remota** (já funciona), com as regras decididas em `docs/decisoes.md`:
 
 - libera **todos** os pontos publicados;
 - **nunca pede** permissão de localização;
 - o ponto acende ao **fechar o cartão**;
-- vale o mesmo que a descoberta presencial na meta semanal; a diferença é só visual (contorno em vez de preenchimento);
+- vale o mesmo que a descoberta presencial; a diferença é só visual (anel em vez de ponto cheio);
 - uma visita depois "promove" a descoberta de remota para presencial.
 
-### Offline-first
-
-O app vai guardar as descobertas **primeiro no próprio aparelho** e enviar ao servidor quando houver internet. Assim, uma saída escolar sem sinal não perde nada.
+**Offline-first.** O app vai guardar as descobertas **primeiro no próprio aparelho** e enviar ao servidor quando houver internet. Assim, uma saída escolar sem sinal não perde nada.
 
 ## 2.9 Comandos úteis
 

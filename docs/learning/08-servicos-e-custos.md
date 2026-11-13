@@ -18,7 +18,8 @@ A regra que torna isso possível é a **troca por configuração**: o mapa, o mo
 | **GitHub** | Código, histórico, CI | Grátis (cota mensal de minutos no repositório privado) | Estourar a cota de minutos | Workflows filtrados por pasta; repositório público tem minutos ilimitados |
 | **Supabase** | Banco, login, API, arquivos, funções | Grátis | **Pausa após cerca de 1 semana sem uso**; limites de tamanho | Keep-alive a cada 3 dias; reativar e testar na véspera de demonstrações |
 | **Ollama** + modelos abertos | IA do pipeline e do guia | Grátis (roda na GPU da equipe) | Notebook desligado = guia sem IA | "Modo trechos" no guia; endpoint estável só para a banca (item 7.5) |
-| **Tiles do mapa** (ex.: OpenFreeMap) ⚪ | Desenho do mapa | Grátis | Serviço gratuito fora do ar | Endereço configurável; arquivo PMTiles próprio no Storage |
+| **Tiles do mapa** (OpenFreeMap, estilo `dark`) | Desenho do mapa | Grátis | Serviço gratuito fora do ar | Endereço configurável; arquivo PMTiles próprio no Storage |
+| **IBGE, API de malhas** | Contornos oficiais de estados e municípios | Grátis (dados públicos; crédito "Limites: IBGE" no mapa) | API fora do ar na hora de importar | Os contornos ficam guardados no nosso banco; a API só é usada na importação |
 | **Nominatim** (OpenStreetMap) ⚪ | Endereço para coordenada | Grátis | Política de uso: no máximo 1 pedido por segundo | Limitador e cache no pipeline |
 | **Hospedagem web** ⚪ | Versão web do app | Grátis (GitHub Pages, Netlify, Vercel ou EAS Hosting) | — | Qualquer hospedagem de arquivos estáticos |
 | **Expo / EAS** | Ferramentas do app, builds | Grátis (cota de builds na nuvem) | Fila lenta | Build no próprio notebook |

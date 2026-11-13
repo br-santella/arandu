@@ -86,7 +86,17 @@ stateDiagram-v2
 - Remoto e presencial valem o mesmo na meta semanal e nas áreas acesas; a diferença é só visual e no rótulo em texto ("Descoberto à distância" / "Visitado").
 - Persistência: `discovery.mode` (`remota` ou `presencial`) e `discovery.challenge_correct`.
 
-### Revelação hierárquica
+### Revelação no mapa (atual)
+
+| Zoom | Camada | Como acende |
+| --- | --- | --- |
+| 0 a 6 | Estados (IBGE) com pontos | Opacidade = 0,55 × descobertos ÷ publicados; contorno tênue a 0% |
+| 5 a 10 | Municípios (IBGE) com pontos | Idem |
+| todos | Pontos | Cinza (a descobrir), anel ocre (remota), ocre cheio (presencial) |
+
+Dentro da cidade (zoom ≥ 10) não há áreas, só pontos.
+
+### Revelação hierárquica por H3 (substituída)
 
 Cada descoberta acende a célula do lugar (H3 res. 9) e aumenta o brilho das áreas que contêm o ponto:
 

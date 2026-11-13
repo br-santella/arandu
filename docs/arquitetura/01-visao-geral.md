@@ -15,6 +15,7 @@ flowchart LR
 
   acervo[("Acervos históricos<br/>em domínio público")]
   osm["OpenStreetMap<br/>Nominatim e tiles do mapa"]
+  ibge["IBGE<br/>malhas de estados e municípios"]
   llm["Provedor de LLM e embeddings<br/>Ollama ou API compatível"]
 
   est -- "explora o mapa, descobre pontos,<br/>responde desafios, pergunta ao guia" --> arandu
@@ -25,6 +26,7 @@ flowchart LR
   acervo -- "documentos" --> arandu
   arandu -- "geocodificação,<br/>tiles" --> osm
   arandu -- "extração e respostas<br/>do guia" --> llm
+  ibge -- "limites oficiais<br/>(importação)" --> arandu
 ```
 
 ## Contêineres
@@ -118,8 +120,9 @@ Riscos e mitigações dos planos gratuitos estão em [`docs/04-arquitetura-tecni
 | Testes de RLS e do índice do guia | `supabase/tests/database/rls.test.sql` | 🟢 Implementado |
 | Seed do piloto | `supabase/seed/` | ⚪ Planejado (depende do conteúdo da equipe) |
 | App Expo: base (tema, fontes, rotas, boas-vindas) | `apps/mobile/src/` | 🟢 Implementado (12 testes, typecheck, lint e export web ok; ainda não aberto num aparelho) |
-| App: mapa web com névoa, células H3, revelação hierárquica (bairro, cidade, estado) e exploração remota | `apps/mobile/src/features/map/`, `src/app/mapa.tsx` | 🟢 Implementado na web (32 testes; verificado com capturas de tela num navegador real); usa pontos de teste locais |
-| App: proximidade, pontos do Supabase, persistência | `apps/mobile/src/` | ⚪ Planejado (M2: 2.4, 2.5, 2.7) |
+| App: mapa web com estados e municípios do IBGE em gradiente, pontos acesos e exploração remota, lendo o Supabase | `apps/mobile/src/features/map/`, `src/app/mapa.tsx` | 🟢 Implementado na web (29 testes; verificado com capturas de tela contra o Supabase local) |
+| Limites oficiais (IBGE) e classificação dos pontos | `supabase/migrations/20261112000200_admin_areas.sql`, `pipeline/arandu_pipeline/ibge_areas.py` | 🟢 Local (12 testes pgTAP, 4 pytest; importação real verificada). ⚪ Remoto: falta aplicar a migration e importar |
+| App: proximidade, persistência e sincronização | `apps/mobile/src/` | ⚪ Planejado (M2: 2.5, 2.7) |
 | App: cartão, desafios, progresso, guia | `apps/mobile/src/app/` | ⚪ Planejado (M3–M6) |
 | Painel de curadoria | `apps/admin/` | ⚪ Planejado |
 | Pipeline: configuração e cliente de IA trocável | `pipeline/arandu_pipeline/config.py`, `llm.py` | 🟢 Implementado (14 testes com endpoint simulado; saída estruturada e embeddings verificados contra `qwen3.5:9b` e `qwen3-embedding:0.6b` reais) |

@@ -24,6 +24,8 @@ classDiagram
     +heritage_type heritage
     +text[] peoples
     +text period_label
+    +text state_code
+    +text municipality_code
     +point_status status
     +sensitivity sensitivity
     +uuid authored_by
@@ -144,6 +146,16 @@ classDiagram
     +tsvector fts
   }
 
+  %% ---------- Limites oficiais ----------
+  class admin_area {
+    <<IBGE>>
+    +text code
+    +text level
+    +text name
+    +text state_code
+    +geometry geom
+  }
+
   %% ---------- Enums ----------
   class point_status {
     <<enumeration>>
@@ -199,6 +211,8 @@ classDiagram
   point "1" *-- "0..*" content_chunk : indexado
   source "0..1" <-- "0..*" content_chunk
 
+  admin_area "0..1" <-- "0..*" point : state_code / municipality_code
+
   point ..> point_status
   point ..> sensitivity
   point ..> heritage_type
@@ -220,6 +234,7 @@ Notas de leitura:
 | `content_chunk.point_id` obrigatório | Todo chunk pertence a um ponto publicado | [decisoes.md](../decisoes.md) |
 | `content_chunk.fts` (full-text `portuguese`) | Busca híbrida e fallback sem embeddings | [decisoes.md](../decisoes.md) |
 | `unlock_radius_m` entre 10 e 1000 | Evita raio inválido | — |
+| Tabela `admin_area` (IBGE) e `point.state_code` / `point.municipality_code` | Progresso por estado e município; relatórios futuros | [decisoes.md](../decisoes.md) |
 
 ## Triggers e funções
 
@@ -228,6 +243,8 @@ Notas de leitura:
 | `point_before_update` | trigger `before update` em `point` | Atualiza `updated_at`; preenche `published_at` ao entrar em `publicado` |
 | `content_chunk_guard` | trigger `before insert/update` em `content_chunk` | Recusa chunk de ponto não publicado ou restrito |
 | `point_purge_chunks` | trigger `after update of status, sensitivity` em `point` | Apaga os chunks quando o ponto sai de `publicado` ou vira `restrito` |
+| `point_assign_admin_area` | trigger `before insert or update of location` em `point` | Preenche estado e município pelo contorno que contém o ponto (PostGIS `ST_Covers`) |
+| `refresh_point_admin_codes()` | função (só service role) | Recalcula os códigos de todos os pontos; rodada após importar as malhas |
 | `is_curator()` | função `security definer` | O usuário atual está em `curator`? |
 | `is_point_public(id)` | função `security definer` | Ponto publicado e não restrito? |
 | `is_source_public(id)` | função `security definer` | Fonte ligada a ponto, desafio ou topônimo publicado? |
@@ -241,3 +258,10 @@ Notas de leitura:
 | `point_status_idx` | Filtro de publicados |
 | `content_chunk_fts_idx` (GIN) | Busca full-text em português |
 | `content_chunk_embedding_idx` (HNSW, cosseno) | Busca vetorial do guia |
+
+## Views
+
+| View | Para quê | Segurança |
+| --- | --- | --- |
+| `published_point` | Pontos publicados com `lat`/`lng` numéricos e códigos IBGE, no formato que o app usa | `security_invoker` + filtro explícito de publicados e não restritos |
+| `area_with_points` | Só estados e municípios com pontos publicados, com total de pontos e contorno em GeoJSON | Idem; o app baixa só essas áreas |

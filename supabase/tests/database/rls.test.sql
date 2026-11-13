@@ -4,6 +4,10 @@ begin;
 create extension if not exists pgtap with schema extensions;
 select plan(13);
 
+-- Isolate from seed data (e.g. dev test points); undone by the final rollback.
+delete from public.discovery;
+delete from public.point;
+
 -- ---------------------------------------------------------------------------
 -- Fixtures (as postgres, bypassing RLS)
 -- ---------------------------------------------------------------------------

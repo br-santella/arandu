@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -8,6 +9,11 @@ import { colors } from '../theme/colors';
 import { fontAssets, fonts } from '../theme/typography';
 
 SplashScreen.preventAutoHideAsync();
+
+// Server data cache (published points, areas). Map data changes rarely.
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { staleTime: 5 * 60 * 1000, retry: 2 } },
+});
 
 export default function RootLayout() {
   const [loaded, error] = useFonts(fontAssets);
@@ -20,7 +26,7 @@ export default function RootLayout() {
   if (!loaded && !error) return null;
 
   return (
-    <>
+    <QueryClientProvider client={queryClient}>
       <StatusBar style="light" />
       <Stack
         screenOptions={{
@@ -38,6 +44,6 @@ export default function RootLayout() {
         <Stack.Screen name="trilha" options={{ title: 'Trilha' }} />
         <Stack.Screen name="ponto/[slug]" options={{ title: 'Ponto' }} />
       </Stack>
-    </>
+    </QueryClientProvider>
   );
 }

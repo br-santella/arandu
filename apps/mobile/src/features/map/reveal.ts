@@ -1,15 +1,11 @@
 // Map reveal rules (docs/03, docs/decisoes.md):
-// - each discovered point lights the H3 cell that contains it;
-// - presencial discoveries are filled, remote ones are outlined;
-// - a later visit promotes remote -> presencial, never the opposite;
-// - larger areas (bairro, cidade, estado) glow in proportion to the share of
-//   their published points already discovered, so progress shows at any zoom.
-
-import { cellToBoundary, cellToParent, latLngToCell } from 'h3-js';
+// - wide views: official estados and municípios (IBGE) glow from 0% to 100% in
+//   proportion to discovered / published points inside them;
+// - inside a city: no areas, only points, lit or unlit;
+// - a point discovered remotely is drawn as a ring, a visited one as a filled dot;
+// - a later visit promotes remote -> presencial, never the opposite.
 
 import type { LatLng } from '../../lib/geo';
-
-export const REVEAL_RESOLUTION = 9; // ~0.1 km² per cell
 
 export type DiscoveryMode = 'presencial' | 'remota';
 
@@ -18,13 +14,27 @@ export type MapPoint = LatLng & {
   slug: string;
   title: string;
   unlockRadiusM: number;
+  stateCode: string | null;
+  municipalityCode: string | null;
 };
 
 export type Discovery = { pointId: string; mode: DiscoveryMode };
 
-export function cellForPoint(point: LatLng): string {
-  return latLngToCell(point.lat, point.lng, REVEAL_RESOLUTION);
-}
+export type AreaLevel = 'estado' | 'municipio';
+
+/** An official area that contains published points (from the area_with_points view). */
+export type AdminArea = {
+  code: string;
+  level: AreaLevel;
+  name: string;
+  geometry: { type: 'Polygon' | 'MultiPolygon'; coordinates: unknown };
+};
+
+/** Zoom ranges per level; inside a city (zoom >= 10) only points are drawn. */
+export const AREA_ZOOM: Record<AreaLevel, { minZoom: number; maxZoom: number }> = {
+  estado: { minZoom: 0, maxZoom: 6 },
+  municipio: { minZoom: 5, maxZoom: 10 },
+};
 
 /** Merge a new discovery into the list, applying the promotion rule. */
 export function recordDiscovery(existing: Discovery[], next: Discovery): Discovery[] {
@@ -36,62 +46,49 @@ export function recordDiscovery(existing: Discovery[], next: Discovery): Discove
   return existing; // already presencial, or same mode: nothing changes
 }
 
-/** Lit cells and their mode. If several points share a cell, presencial wins. */
-export function litCells(points: MapPoint[], discoveries: Discovery[]): Map<string, DiscoveryMode> {
-  const byId = new Map(points.map((p) => [p.id, p]));
-  const cells = new Map<string, DiscoveryMode>();
-  for (const d of discoveries) {
-    const point = byId.get(d.pointId);
-    if (!point) continue; // e.g. point was unpublished since the discovery
-    const cell = cellForPoint(point);
-    if (cells.get(cell) !== 'presencial') cells.set(cell, d.mode);
+export type AreaProgress = { discovered: number; total: number; ratio: number };
+
+/**
+ * discovered / published points per area code. Remote and presencial count the same.
+ * Points without a code for the level (outside Brazil, areas not loaded) are skipped.
+ */
+export function areaProgress(
+  points: MapPoint[],
+  discoveries: Discovery[],
+  level: AreaLevel,
+): Map<string, AreaProgress> {
+  const found = new Set(discoveries.map((d) => d.pointId));
+  const areas = new Map<string, AreaProgress>();
+  for (const p of points) {
+    const code = level === 'estado' ? p.stateCode : p.municipalityCode;
+    if (!code) continue;
+    const a = areas.get(code) ?? { discovered: 0, total: 0, ratio: 0 };
+    a.total += 1;
+    if (found.has(p.id)) a.discovered += 1;
+    a.ratio = a.discovered / a.total;
+    areas.set(code, a);
   }
-  return cells;
+  return areas;
 }
 
-type Ring = [number, number][];
-
-function cellRing(cell: string): Ring {
-  // GeoJSON format: [lng, lat], ring already closed by h3-js.
-  const ring = cellToBoundary(cell, true) as Ring;
-  const [first, last] = [ring[0], ring[ring.length - 1]];
-  const closed = first[0] === last[0] && first[1] === last[1];
-  return closed ? ring : [...ring, first];
-}
-
-/** GeoJSON with one polygon per lit cell, tagged with its mode. */
-export function litCellsGeoJSON(cells: Map<string, DiscoveryMode>) {
+/** GeoJSON for one level, each area tagged with its progress (0 if unknown). */
+export function areasGeoJSON(areas: AdminArea[], progress: Map<string, AreaProgress>, level: AreaLevel) {
   return {
     type: 'FeatureCollection' as const,
-    features: [...cells].map(([cell, mode]) => ({
-      type: 'Feature' as const,
-      properties: { cell, mode },
-      geometry: { type: 'Polygon' as const, coordinates: [cellRing(cell)] },
-    })),
+    features: areas
+      .filter((a) => a.level === level)
+      .map((a) => {
+        const p = progress.get(a.code) ?? { discovered: 0, total: 0, ratio: 0 };
+        return {
+          type: 'Feature' as const,
+          properties: { code: a.code, name: a.name, ...p },
+          geometry: a.geometry,
+        };
+      }),
   };
 }
 
-const WORLD_RING: Ring = [
-  [-180, -85],
-  [180, -85],
-  [180, 85],
-  [-180, 85],
-  [-180, -85],
-];
-
-/** Dark "fog" over the world with a hole for every lit cell. */
-export function fogGeoJSON(cells: Map<string, DiscoveryMode>) {
-  return {
-    type: 'Feature' as const,
-    properties: {},
-    geometry: {
-      type: 'Polygon' as const,
-      coordinates: [WORLD_RING, ...[...cells.keys()].map((c) => cellRing(c).reverse())],
-    },
-  };
-}
-
-/** GeoJSON for point markers, with a discovered flag for styling. */
+/** GeoJSON for point markers: mode is 'apagado', 'remota' or 'presencial'. */
 export function pointsGeoJSON(points: MapPoint[], discoveries: Discovery[]) {
   const modes = new Map(discoveries.map((d) => [d.pointId, d.mode]));
   return {
@@ -104,55 +101,20 @@ export function pointsGeoJSON(points: MapPoint[], discoveries: Discovery[]) {
   };
 }
 
-// ---------------------------------------------------------------------------
-// Hierarchical progress (docs/decisoes.md): each larger area glows in proportion
-// to discovered / published points inside it. Remote and presencial count the same.
-// H3 hexagons approximate these areas; they are not administrative boundaries.
-// ---------------------------------------------------------------------------
-
-export type RevealLevel = {
-  id: 'bairro' | 'cidade' | 'estado';
-  resolution: number;
-  /** Zoom range where this level is drawn (overlaps give smooth transitions). */
-  minZoom: number;
-  maxZoom: number;
+/** A dim veil over the whole map: the "unlit" Brazil. */
+export const VEIL_GEOJSON = {
+  type: 'Feature' as const,
+  properties: {},
+  geometry: {
+    type: 'Polygon' as const,
+    coordinates: [
+      [
+        [-180, -85],
+        [180, -85],
+        [180, 85],
+        [-180, 85],
+        [-180, -85],
+      ],
+    ],
+  },
 };
-
-export const REVEAL_LEVELS: readonly RevealLevel[] = [
-  { id: 'estado', resolution: 2, minZoom: 0, maxZoom: 5.5 }, // ~86,800 km²
-  { id: 'cidade', resolution: 4, minZoom: 4.5, maxZoom: 9 }, // ~1,770 km²
-  { id: 'bairro', resolution: 7, minZoom: 8, maxZoom: 13 }, // ~5.2 km²
-];
-
-export type AreaProgress = { discovered: number; total: number; ratio: number };
-
-/** Progress per parent cell at `resolution`, over all published points. */
-export function areaProgress(
-  points: MapPoint[],
-  discoveries: Discovery[],
-  resolution: number,
-): Map<string, AreaProgress> {
-  const found = new Set(discoveries.map((d) => d.pointId));
-  const areas = new Map<string, AreaProgress>();
-  for (const p of points) {
-    const area = cellToParent(cellForPoint(p), resolution);
-    const a = areas.get(area) ?? { discovered: 0, total: 0, ratio: 0 };
-    a.total += 1;
-    if (found.has(p.id)) a.discovered += 1;
-    a.ratio = a.discovered / a.total;
-    areas.set(area, a);
-  }
-  return areas;
-}
-
-/** GeoJSON for one level: every area with published points, tagged with its progress. */
-export function areaProgressGeoJSON(progress: Map<string, AreaProgress>, level: RevealLevel['id']) {
-  return {
-    type: 'FeatureCollection' as const,
-    features: [...progress].map(([cell, p]) => ({
-      type: 'Feature' as const,
-      properties: { cell, level, ...p },
-      geometry: { type: 'Polygon' as const, coordinates: [cellRing(cell)] },
-    })),
-  };
-}

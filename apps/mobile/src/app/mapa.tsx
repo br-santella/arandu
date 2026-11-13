@@ -1,10 +1,13 @@
+import { useQuery } from '@tanstack/react-query';
 import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+
+import { Button } from '../components/Button';
 
 import { PointSheet } from '../features/map/PointSheet';
 import { RevealMap } from '../features/map/RevealMap';
-import { TEST_POINTS } from '../features/map/fixtures';
+import { fetchMapData } from '../features/map/api';
 import { type Discovery, type DiscoveryMode, recordDiscovery } from '../features/map/reveal';
 import { colors } from '../theme/colors';
 import { MIN_TOUCH_TARGET, fonts } from '../theme/typography';
@@ -18,7 +21,9 @@ const MODE_LABEL: Record<DiscoveryMode | 'apagado', string> = {
 export default function MapScreen() {
   const { modo } = useLocalSearchParams<{ modo?: string }>();
   const remote = modo !== 'perto';
-  const points = TEST_POINTS; // TODO(M2 2.4): published points from Supabase
+  const query = useQuery({ queryKey: ['map-data'], queryFn: fetchMapData });
+  const points = query.data?.points ?? [];
+  const areas = query.data?.areas ?? [];
 
   // TODO(M2 2.7): persist locally and sync to Supabase.
   const [discoveries, setDiscoveries] = useState<Discovery[]>([]);
@@ -45,6 +50,7 @@ export default function MapScreen() {
       <View style={styles.map}>
         <RevealMap
           points={points}
+          areas={areas}
           discoveries={discoveries}
           onPointPress={openPoint}
           focus={open}
@@ -52,6 +58,18 @@ export default function MapScreen() {
       </View>
 
       <View style={styles.panel}>
+        {query.isPending && (
+          <View style={styles.notice} accessibilityLiveRegion="polite">
+            <ActivityIndicator color={colors.accent} />
+            <Text style={styles.noticeText}>Carregando os pontos…</Text>
+          </View>
+        )}
+        {query.isError && (
+          <View style={styles.notice} accessibilityLiveRegion="assertive">
+            <Text style={styles.noticeText}>Não foi possível carregar os pontos.</Text>
+            <Button label="Tentar de novo" variant="secondary" onPress={() => query.refetch()} />
+          </View>
+        )}
         <Text style={styles.status} accessibilityLiveRegion="polite">
           {remote ? 'Explorando de qualquer lugar' : 'Explorando perto de mim (em construção)'} ·{' '}
           {lit} de {points.length} pontos acesos
@@ -89,6 +107,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 12,
   },
+  notice: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 8, flexWrap: 'wrap' },
+  noticeText: { fontFamily: fonts.body, color: colors.text, fontSize: 15 },
   status: { fontFamily: fonts.bodyBold, color: colors.text, fontSize: 15, marginBottom: 8 },
   list: { flexGrow: 0 },
   listContent: { gap: 4, paddingBottom: 16 },

@@ -56,6 +56,8 @@ Estado: 🟢 Implementado (13 testes pgTAP passando). Fonte: [`20261112000100_rl
 | `validation`, `ai_proposal`, `partner` | — | — | Tudo | Tudo |
 | `content_chunk` | — | — | Ler | Tudo (com trigger de guarda) |
 | `curator` | — | — | Ler | Tudo |
+| `admin_area` (IBGE, dado público) | Ler | Ler | Ler | Tudo |
+| Views `published_point`, `area_with_points` | Ler (só publicados, via RLS de quem pergunta) | Igual | Igual | Tudo |
 
 "—" = sem acesso. Sem política, o Postgres nega por padrão.
 

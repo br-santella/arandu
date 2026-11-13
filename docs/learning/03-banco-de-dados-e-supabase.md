@@ -101,6 +101,27 @@ Um **índice** é como o índice remissivo de um livro: em vez de ler todas as p
 
 A coluna `content_chunk.fts` guarda o texto já preparado para busca com `to_tsvector('portuguese', text)`. O Postgres reduz cada palavra ao seu radical: "descobertas", "descoberta" e "descobrir" passam a se encontrar. Assim o guia acha trechos mesmo quando a pergunta usa outra forma da palavra.
 
+## 3.5b Limites oficiais e "ponto dentro de polígono"
+
+A tabela `admin_area` guarda os contornos oficiais dos **27 estados e 5.570 municípios**, baixados da API de malhas do **IBGE** (dados públicos) pelo script `pipeline/arandu_pipeline/ibge_areas.py`:
+
+```bash
+cd pipeline && uv run python -m arandu_pipeline.ibge_areas   # depois de cada db reset
+```
+
+Cada ponto ganha automaticamente o código IBGE do estado (`state_code`, 2 dígitos) e do município (`municipality_code`, 7 dígitos). Quem faz isso é o trigger `point_assign_admin_area`, com uma operação clássica de geografia: ***point-in-polygon*** ("este ponto está dentro deste polígono?"), feita pela função `ST_Covers` do PostGIS.
+
+Se as malhas forem carregadas **depois** dos pontos, a função `refresh_point_admin_codes()` recalcula todos. O script de importação já a chama no final.
+
+### Views: perguntas prontas
+
+Uma **view** é uma consulta SQL salva com nome, que se usa como se fosse uma tabela. O Arandu tem duas, feitas para o app:
+
+- `published_point`: pontos publicados com latitude e longitude como números (o app não precisa entender o formato do PostGIS);
+- `area_with_points`: só os estados e municípios que têm pontos publicados, com o total e o contorno.
+
+As duas usam `security_invoker`: a view roda **com as permissões de quem pergunta**, então as regras de acesso (RLS) continuam valendo. Sem isso, uma view rodaria com as permissões do dono do banco e poderia mostrar o que não devia.
+
 ## 3.6 Triggers e funções: regras que o banco aplica sozinho
 
 Uma **função** é um bloco de código guardado no banco. Um **trigger** (gatilho) é uma função que roda **automaticamente** quando algo acontece numa tabela.
@@ -173,7 +194,7 @@ Atenção: na CLI 3, **sem `--remote` o comando vai para o banco local**.
 
 ## 3.10 O seed: o conteúdo inicial
 
-O **seed** (semente) é o conteúdo que entra no banco quando ele é criado. No Arandu, ele vem da pesquisa do M1, em arquivos JSON legíveis por pessoas (`supabase/seed/points/<slug>.json`), no formato definido em `docs/09-roteiro-pesquisa-m1.md`.
+O **seed** (semente) é o conteúdo que entra no banco quando ele é criado. Hoje, no ambiente local, o seed tem só **4 pontos de teste** (`supabase/seed/dev_test_points.sql`), usados para desenvolver o mapa. Eles **nunca** vão para o banco remoto. No Arandu, ele vem da pesquisa do M1, em arquivos JSON legíveis por pessoas (`supabase/seed/points/<slug>.json`), no formato definido em `docs/09-roteiro-pesquisa-m1.md`.
 
 Um script de importação ⚪ vai validar cada arquivo e recusar pontos sem fonte, sem coordenada ou sem desafio. Todo ponto do seed entra como `revisao_pesquisa`; nenhum entra publicado.
 

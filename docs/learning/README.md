@@ -51,6 +51,7 @@ O projeto está em construção. Cada seção indica o estado do que descreve:
 
 | Data | O que mudou | Documentos |
 | --- | --- | --- |
+| 2026-11-12 | Mapa com limites oficiais do IBGE e só pontos dentro da cidade; app lendo o Supabase; views, point-in-polygon e TanStack Query; histórico das versões do mapa | 02, 03, 08 |
 | 2026-11-12 | Revelação hierárquica (bairro, cidade, estado) com hierarquia do H3 | 02 |
 | 2026-11-12 | Paleta noturna, ordem das camadas e o bug de atualização descartada (`isStyleLoaded`) | 02 |
 | 2026-11-12 | Mapa web implementado: arquivos por plataforma, GeoJSON e camadas, névoa com buracos, worker do maplibre, verificação com navegador, SPA | 02 |

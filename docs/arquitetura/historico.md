@@ -4,6 +4,7 @@ Uma linha por mudança que afete esta pasta. Mais recente no topo.
 
 | Data | Mudança | Documentos afetados |
 | --- | --- | --- |
+| 2026-11-12 | Limites oficiais do IBGE (`admin_area`), códigos de estado/município nos pontos por trigger, views `published_point` e `area_with_points`; app lê o Supabase; mapa com estados/municípios em gradiente e só pontos dentro da cidade; H3 removido | 01, 02, 03, 05 |
 | 2026-11-12 | Revelação hierárquica: áreas H3 res. 7, 4 e 2 brilham na proporção de pontos descobertos, por faixa de zoom | 01, 03 |
 | 2026-11-12 | Mapa: paleta noturna (`mapTheme.ts`), névoa a 50% abaixo dos rótulos; corrigido descarte de atualizações durante carregamento de tiles | 01 |
 | 2026-11-12 | Mapa web (maplibre-gl 6, OpenFreeMap dark), névoa com buracos por célula H3 (res. 9), contorno para remota e preenchimento para presencial, lista acessível, cartão provisório; protótipo só web | 01 |

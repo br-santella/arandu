@@ -19,8 +19,8 @@ export const mapColors = {
   fog: '#05080A',
 } as const;
 
-// Unrevealed areas are dimmed, but the map stays readable underneath.
-export const FOG_OPACITY = 0.5;
+// A light veil keeps Brazil "unlit"; areas and points glow on top of it.
+export const VEIL_OPACITY = 0.3;
 
 type Override = [layerId: string, property: string, value: string | number];
 

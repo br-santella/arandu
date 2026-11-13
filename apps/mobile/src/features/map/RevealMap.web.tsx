@@ -11,15 +11,14 @@ import {
 import { useEffect, useMemo, useRef } from 'react';
 
 import { colors, palette } from '../../theme/colors';
-import { FOG_OPACITY, mapColors, STYLE_OVERRIDES } from './mapTheme';
+import { mapColors, STYLE_OVERRIDES, VEIL_OPACITY } from './mapTheme';
 import {
-  REVEAL_LEVELS,
+  AREA_ZOOM,
+  type AreaLevel,
   areaProgress,
-  areaProgressGeoJSON,
-  fogGeoJSON,
-  litCells,
-  litCellsGeoJSON,
+  areasGeoJSON,
   pointsGeoJSON,
+  VEIL_GEOJSON,
 } from './reveal';
 import type { RevealMapProps } from './RevealMap.types';
 
@@ -32,7 +31,9 @@ const STYLE_URL =
 // Brazil, roughly: [west, south, east, north]
 const BRAZIL_BOUNDS: [number, number, number, number] = [-74, -34, -34, 5.5];
 
-export function RevealMap({ points, discoveries, onPointPress, focus }: RevealMapProps) {
+const LEVELS: AreaLevel[] = ['estado', 'municipio'];
+
+export function RevealMap({ points, areas, discoveries, onPointPress, focus }: RevealMapProps) {
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<MapLibreMap | null>(null);
   const onPress = useRef(onPointPress);
@@ -40,18 +41,18 @@ export function RevealMap({ points, discoveries, onPointPress, focus }: RevealMa
     onPress.current = onPointPress;
   }, [onPointPress]);
 
-  const data = useMemo(() => {
-    const cells = litCells(points, discoveries);
-    return {
-      fog: fogGeoJSON(cells),
-      cells: litCellsGeoJSON(cells),
+  const data = useMemo(
+    () => ({
       points: pointsGeoJSON(points, discoveries),
-      areas: REVEAL_LEVELS.map((level) => ({
-        level,
-        geojson: areaProgressGeoJSON(areaProgress(points, discoveries, level.resolution), level.id),
-      })),
-    };
-  }, [points, discoveries]);
+      areas: Object.fromEntries(
+        LEVELS.map((level) => [
+          level,
+          areasGeoJSON(areas, areaProgress(points, discoveries, level), level),
+        ]),
+      ) as Record<AreaLevel, ReturnType<typeof areasGeoJSON>>,
+    }),
+    [points, areas, discoveries],
+  );
   const latest = useRef(data);
 
   // Create the map once.
@@ -61,7 +62,7 @@ export function RevealMap({ points, discoveries, onPointPress, focus }: RevealMa
       container: container.current,
       style: STYLE_URL,
       bounds: BRAZIL_BOUNDS,
-      attributionControl: { compact: true },
+      attributionControl: { compact: true, customAttribution: 'Limites: IBGE' },
     });
     map.current = m;
     m.addControl(new NavigationControl({ showCompass: false }), 'top-right');
@@ -69,8 +70,7 @@ export function RevealMap({ points, discoveries, onPointPress, focus }: RevealMa
     m.on('load', () => {
       // Night-mode palette: readable land/ocean contrast, light borders and labels.
       for (const [layerId, property, value] of STYLE_OVERRIDES) {
-        // All overrides are paint properties; skip layers a future style may drop.
-        if (!m.getLayer(layerId)) continue;
+        if (!m.getLayer(layerId)) continue; // a future style may drop a layer
         m.setPaintProperty(layerId, property as Parameters<typeof m.setPaintProperty>[1], value);
       }
 
@@ -85,88 +85,90 @@ export function RevealMap({ points, discoveries, onPointPress, focus }: RevealMa
         }
       }
 
-      m.addSource('fog', { type: 'geojson', data: latest.current.fog });
-      m.addSource('cells', { type: 'geojson', data: latest.current.cells });
-      m.addSource('points', { type: 'geojson', data: latest.current.points });
-
-      // Fog and cells go below the first label layer, so place names stay bright.
+      // Veil and areas go below the first label layer, so place names stay bright.
       const firstLabel = m.getStyle().layers.find((l) => l.type === 'symbol')?.id;
 
-      m.addLayer({
-        id: 'fog',
-        type: 'fill',
-        source: 'fog',
-        // Dims unrevealed areas; revealed cells (holes) read as brighter ("lit").
-        paint: { 'fill-color': mapColors.fog, 'fill-opacity': FOG_OPACITY },
-      }, firstLabel);
-      // Larger areas glow in proportion to the share of their points discovered.
-      // Each level is drawn only in its zoom range; ranges overlap for smooth transitions.
-      for (const { level, geojson } of latest.current.areas) {
-        const source = `area-${level.id}`;
-        m.addSource(source, { type: 'geojson', data: geojson });
-        m.addLayer({
-          id: `${source}-glow`,
+      m.addSource('veil', { type: 'geojson', data: VEIL_GEOJSON });
+      m.addLayer(
+        {
+          id: 'veil',
           type: 'fill',
-          source,
-          minzoom: level.minZoom,
-          maxzoom: level.maxZoom,
-          paint: {
-            'fill-color': palette.ochre,
-            // 0%: no glow. From the first discovery, a visible baseline (0.14)
-            // that grows linearly to 0.45 at 100%, so progress is felt early.
-            'fill-opacity': [
-              'case',
-              ['==', ['get', 'ratio'], 0],
-              0,
-              ['+', 0.14, ['*', 0.31, ['get', 'ratio']]],
-            ],
+          source: 'veil',
+          paint: { 'fill-color': mapColors.fog, 'fill-opacity': VEIL_OPACITY },
+        },
+        firstLabel,
+      );
+
+      // Estados (wide view) and municípios (regional view) glow from 0% to 100%
+      // in proportion to discovered / published points. Inside a city: no areas.
+      for (const level of LEVELS) {
+        const source = `area-${level}`;
+        const { minZoom, maxZoom } = AREA_ZOOM[level];
+        m.addSource(source, { type: 'geojson', data: latest.current.areas[level] });
+        m.addLayer(
+          {
+            id: `${source}-glow`,
+            type: 'fill',
+            source,
+            minzoom: minZoom,
+            maxzoom: maxZoom,
+            paint: {
+              'fill-color': palette.ochre,
+              'fill-opacity': ['*', 0.55, ['get', 'ratio']], // linear: 0% -> 0, 100% -> 0.55
+            },
           },
-        }, firstLabel);
-        m.addLayer({
-          id: `${source}-outline`,
-          type: 'line',
-          source,
-          minzoom: level.minZoom,
-          maxzoom: level.maxZoom,
-          paint: {
-            'line-color': palette.ochre,
-            // Faint outline even at 0%: shows there is something to discover here.
-            'line-opacity': ['interpolate', ['linear'], ['get', 'ratio'], 0, 0.25, 1, 0.8],
-            'line-width': 1.2,
+          firstLabel,
+        );
+        m.addLayer(
+          {
+            id: `${source}-outline`,
+            type: 'line',
+            source,
+            minzoom: minZoom,
+            maxzoom: maxZoom,
+            paint: {
+              'line-color': palette.ochre,
+              // Faint outline even at 0%: there is something to discover here.
+              'line-opacity': ['+', 0.3, ['*', 0.6, ['get', 'ratio']]],
+              'line-width': 1.2,
+            },
           },
-        }, firstLabel);
+          firstLabel,
+        );
       }
 
-      m.addLayer({
-        id: 'cells-fill',
-        type: 'fill',
-        source: 'cells',
-        filter: ['==', ['get', 'mode'], 'presencial'],
-        paint: { 'fill-color': palette.ochre, 'fill-opacity': 0.22 },
-      }, firstLabel);
-      m.addLayer({
-        id: 'cells-outline',
-        type: 'line',
-        source: 'cells',
-        paint: { 'line-color': palette.ochre, 'line-width': 2 },
-      }, firstLabel);
+      // Points: unlit (grey), remote (ochre ring), visited (filled ochre).
+      m.addSource('points', { type: 'geojson', data: latest.current.points });
       m.addLayer({
         id: 'points-glow',
         type: 'circle',
         source: 'points',
         filter: ['!=', ['get', 'mode'], 'apagado'],
-        paint: { 'circle-radius': 14, 'circle-color': palette.ochre, 'circle-opacity': 0.25, 'circle-blur': 0.8 },
+        paint: {
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 3, 8, 15, 18],
+          'circle-color': palette.ochre,
+          'circle-opacity': 0.25,
+          'circle-blur': 0.8,
+        },
       });
       m.addLayer({
         id: 'points',
         type: 'circle',
         source: 'points',
         paint: {
-          'circle-radius': 7,
-          'circle-color': ['match', ['get', 'mode'], 'apagado', colors.textMuted, palette.ochre],
-          'circle-opacity': ['match', ['get', 'mode'], 'apagado', 0.55, 1],
-          'circle-stroke-color': palette.dark,
-          'circle-stroke-width': 1.5,
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 3, 3.5, 10, 6, 15, 8],
+          'circle-color': [
+            'match',
+            ['get', 'mode'],
+            'presencial',
+            palette.ochre,
+            'remota',
+            mapColors.land,
+            colors.textMuted,
+          ],
+          'circle-opacity': ['match', ['get', 'mode'], 'apagado', 0.6, 1],
+          'circle-stroke-color': ['match', ['get', 'mode'], 'apagado', palette.dark, palette.ochre],
+          'circle-stroke-width': ['match', ['get', 'mode'], 'remota', 2.5, 1.5],
         },
       });
 
@@ -184,23 +186,20 @@ export function RevealMap({ points, discoveries, onPointPress, focus }: RevealMa
     };
   }, []);
 
-  // Update data when discoveries change.
+  // Update data when points, areas or discoveries change.
   useEffect(() => {
     latest.current = data;
     const m = map.current;
     // Do NOT gate on isStyleLoaded(): it is false while tiles load (e.g. during
-    // flyTo), which silently dropped updates and left discovered points unlit.
-    // Sources exist once 'load' ran; before that, the load handler reads latest.current.
+    // flyTo), which silently dropped updates. Before 'load', the handler reads latest.current.
     if (!m) return;
-    (m.getSource('fog') as GeoJSONSource | undefined)?.setData(data.fog);
-    (m.getSource('cells') as GeoJSONSource | undefined)?.setData(data.cells);
     (m.getSource('points') as GeoJSONSource | undefined)?.setData(data.points);
-    for (const { level, geojson } of data.areas) {
-      (m.getSource(`area-${level.id}`) as GeoJSONSource | undefined)?.setData(geojson);
+    for (const level of LEVELS) {
+      (m.getSource(`area-${level}`) as GeoJSONSource | undefined)?.setData(data.areas[level]);
     }
   }, [data]);
 
-  // Fly to the focused point so its cell is visible when it lights up.
+  // Fly to the focused point.
   useEffect(() => {
     if (!focus || !map.current) return;
     map.current.flyTo({ center: [focus.lng, focus.lat], zoom: 15, duration: 1200 });
