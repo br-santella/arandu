@@ -2,7 +2,7 @@
 -- Fixtures use fictitious square areas and codes; no real geography.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(12);
+select plan(14);
 
 -- Isolate from seed data (e.g. dev test points); undone by the final rollback.
 delete from public.discovery;
@@ -16,6 +16,15 @@ insert into public.admin_area (code, level, name, geom) values
   ('9900001', 'municipio', '[TESTE] Município',
    extensions.st_multi(extensions.st_geomfromtext('POLYGON((0 0, 1 0, 1 1, 0 1, 0 0))', 4326)));
 update public.admin_area set state_code = '99' where code = '9900001';
+-- A second município in estado 99 (no points), and estado 98 with a município
+-- but no published points: used by the outline views.
+insert into public.admin_area (code, level, name, state_code, geom) values
+  ('9900002', 'municipio', '[TESTE] Município sem pontos', '99',
+   extensions.st_multi(extensions.st_geomfromtext('POLYGON((-1 0, 0 0, 0 1, -1 1, -1 0))', 4326))),
+  ('98', 'estado', '[TESTE] Outro estado', null,
+   extensions.st_multi(extensions.st_geomfromtext('POLYGON((10 10, 11 10, 11 11, 10 11, 10 10))', 4326))),
+  ('9800001', 'municipio', '[TESTE] Município de outro estado', '98',
+   extensions.st_multi(extensions.st_geomfromtext('POLYGON((10 10, 11 10, 11 11, 10 11, 10 10))', 4326)));
 
 insert into public.point (id, slug, title, summary, body, location, city, heritage, status, sensitivity) values
   ('00000000-0000-0000-0000-0000000000e1', 'teste-dentro-municipio', '[TESTE]', '[TESTE]', '[TESTE]',
@@ -86,6 +95,16 @@ select results_eq(
   $$select lat, lng from public.published_point where slug = 'teste-dentro-municipio'$$,
   $$values (0.5::float8, 0.5::float8)$$,
   'published_point exposes lat/lng as numbers');
+
+select results_eq(
+  $$select code from public.state_outline where code in ('98', '99') order by code$$,
+  $$values ('98'::text), ('99'::text)$$,
+  'state_outline lists every estado, with or without points');
+
+select results_eq(
+  $$select code from public.municipality_outline where code like '9%' order by code$$,
+  $$values ('9900001'::text), ('9900002'::text)$$,
+  'municipality_outline lists all municípios of estados with published points, and only those');
 
 select * from finish();
 rollback;

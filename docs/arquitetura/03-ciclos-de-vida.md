@@ -88,13 +88,11 @@ stateDiagram-v2
 
 ### Revelação no mapa (atual)
 
-| Zoom | Camada | Como acende |
-| --- | --- | --- |
-| 0 a 6 | Estados (IBGE) com pontos | Opacidade = 0,55 × descobertos ÷ publicados; contorno tênue a 0% |
-| 5 a 10 | Municípios (IBGE) com pontos | Idem |
-| todos | Pontos | Cinza (a descobrir), anel ocre (remota), ocre cheio (presencial) |
-
-Dentro da cidade (zoom ≥ 10) não há áreas, só pontos.
+| Vista | Zoom | O que aparece | Como acende |
+| --- | --- | --- | --- |
+| **Brasil** | < 5 | Só as divisões dos 27 estados | Estados com pontos: preenchimento = 0,55 × descobertos ÷ publicados, contorno ocre |
+| **Estado** | 5 a 9 | Contorno do estado destacado + contorno de todos os municípios; sem estradas; pontos | Municípios com pontos: mesmo gradiente, contorno ocre |
+| **Município** | ≥ 9 | Ruas, contorno da cidade destacado, pontos | Pontos: cinza (a descobrir), anel ocre (remota), ocre cheio (presencial) |
 
 ### Revelação hierárquica por H3 (substituída)
 

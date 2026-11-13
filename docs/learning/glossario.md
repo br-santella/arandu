@@ -43,6 +43,7 @@ Termos técnicos usados no Arandu, em ordem alfabética. Entre parênteses, o do
 | **JSX** | Sintaxe parecida com HTML usada para descrever telas no React (2) |
 | **JWT** | Token assinado que identifica um usuário sem revelar quem ele é (4) |
 | **LGPD** | Lei Geral de Proteção de Dados (Lei 13.709/2018) (4) |
+| **Nível de detalhe** | Mostrar mais ou menos elementos conforme o zoom, como num atlas (2) |
 | **Lint** | Verificação automática de erros comuns e de estilo no código (2, 7) |
 | **LLM** | Grande modelo de linguagem; IA que gera texto prevendo o próximo token (5) |
 | **Lockfile** | Arquivo com as versões exatas das dependências (7) |
@@ -54,6 +55,7 @@ Termos técnicos usados no Arandu, em ordem alfabética. Entre parênteses, o do
 | **Point-in-polygon** | Operação que responde se um ponto está dentro de um polígono; usada para achar o estado e o município de cada ponto (3) |
 | **pgTAP** | Ferramenta para escrever testes em SQL (3) |
 | **pgvector** | Extensão do Postgres para guardar e buscar vetores (5) |
+| **Paginação** | Buscar uma lista grande em partes (páginas), porque a API limita quantas linhas devolve por vez (2) |
 | **Pipeline** | Sequência de etapas que processa algo; no Arandu, de documento a proposta (5, 6) |
 | **PostGIS** | Extensão do Postgres para dados geográficos (3) |
 | **PostgreSQL** | O banco de dados relacional usado pelo Arandu (3) |

@@ -265,3 +265,5 @@ Notas de leitura:
 | --- | --- | --- |
 | `published_point` | Pontos publicados com `lat`/`lng` numéricos e códigos IBGE, no formato que o app usa | `security_invoker` + filtro explícito de publicados e não restritos |
 | `area_with_points` | Só estados e municípios com pontos publicados, com total de pontos e contorno em GeoJSON | Idem; o app baixa só essas áreas |
+| `state_outline` | Contorno de todos os estados (vista Brasil) | `security_invoker`; `admin_area` é pública |
+| `municipality_outline` | Contorno de todos os municípios dos estados que têm pontos publicados (vista Estado) | Idem; o filtro de estados usa só pontos publicados |

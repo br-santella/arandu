@@ -150,13 +150,17 @@ it('matches known WCAG reference values', () => {
 
 Estado: 🟢 **na web**: mapa, estados e municípios oficiais que acendem em gradiente, pontos acesos e exploração remota, **lendo os pontos publicados do Supabase**. ⚪ Proximidade (localização do navegador) e salvamento das descobertas vêm nos próximos passos. No celular, o mapa mostra por enquanto um aviso: o protótipo é **só web** até ser validado.
 
-### O que a pessoa vê em cada zoom
+### O que a pessoa vê em cada zoom: níveis de detalhe
 
-| Zoom | O que aparece | Como "acende" |
-| --- | --- | --- |
-| **País** | Contornos oficiais dos **estados** que têm pontos | Brilho de 0% a 100%, proporcional a pontos descobertos ÷ pontos publicados no estado |
-| **Região** | Contornos oficiais dos **municípios** que têm pontos | O mesmo, por município |
-| **Dentro da cidade** | **Só os pontos**, sem áreas | Ponto cinza (a descobrir), **anel** ocre (descoberto à distância) ou ponto ocre **cheio** (visitado) |
+Um mapa mostra coisas diferentes conforme a distância, como um atlas: de longe, os estados; de perto, as ruas. Esse princípio se chama **nível de detalhe**. No Arandu, cada nível conta uma parte da história:
+
+| Vista | Zoom | O que aparece | Como "acende" |
+| --- | --- | --- | --- |
+| **Brasil** | menor que 5 | **Só as divisões dos estados**, sem estradas nem cidades | Estados com pontos brilham de 0% a 100%, na proporção descobertos ÷ publicados |
+| **Estado** | 5 a 9 | O contorno do estado **destacado** e o contorno de **todos os municípios**; nenhuma estrada | Municípios com pontos brilham com a mesma regra. Ver todos os municípios ajuda a estimar "quantas cidades faltam" |
+| **Município** | 9 ou mais | Ruas, o contorno da cidade **destacado** e os pontos | Ponto cinza (a descobrir), **anel** ocre (descoberto à distância) ou ponto ocre **cheio** (visitado) |
+
+Para esconder estradas e rótulos nas vistas amplas, a função `baseLayerRule` (em `mapTheme.ts`, testada) examina cada camada do estilo base e decide: esconder (as fronteiras estaduais do estilo, porque usamos as do IBGE), mostrar só a partir de certo zoom (estradas a partir do 9, nomes de cidades grandes a partir do 5) ou manter como está. No código, isso vira `setLayerZoomRange`, que define em que faixa de zoom uma camada é desenhada.
 
 Exemplo: com 3 pontos no estado de São Paulo e 1 no Distrito Federal, descobrir 1 ponto em São Paulo faz o estado de São Paulo brilhar a 33%, e o Distrito Federal fica só com um contorno tênue, um convite a explorar.
 
@@ -176,12 +180,16 @@ Exemplo: com 3 pontos no estado de São Paulo e 1 no Distrito Federal, descobrir
 
 ### De onde vêm os dados
 
-O app faz **duas perguntas** ao Supabase, por duas *views* do banco (ver [documento 3](03-banco-de-dados-e-supabase.md)):
+O app faz **quatro perguntas** ao Supabase, por *views* do banco (ver [documento 3](03-banco-de-dados-e-supabase.md)):
 
-1. `published_point`: os pontos publicados, já com latitude, longitude e os códigos IBGE do estado e do município;
-2. `area_with_points`: só os estados e municípios **que têm pontos publicados**, com o contorno em GeoJSON.
+| View | O que traz | Tamanho com os pontos de teste |
+| --- | --- | --- |
+| `published_point` | Pontos publicados, com latitude, longitude e códigos IBGE | ≈ 1 KB |
+| `area_with_points` | Estados e municípios **com pontos**, com contorno (para o brilho) | ≈ 9 KB |
+| `state_outline` | Contorno de **todos** os estados (vista Brasil) | ≈ 108 KB |
+| `municipality_outline` | Contorno de **todos os municípios dos estados com pontos** (vista Estado) | ≈ 315 KB |
 
-Com os pontos de teste, a segunda resposta tem cerca de **9 KB**, em vez dos 2,5 MB que seriam os contornos do Brasil inteiro.
+A API do Supabase devolve no máximo 1.000 linhas por pergunta. Por isso a busca é **paginada** (`fetchAllPages`): pede de mil em mil até a resposta vir incompleta. Isso importa para estados com muitos municípios, como Minas Gerais (853).
 
 O app usa o **TanStack Query** para buscar e guardar esses dados em memória (*cache*). Ele cuida de "carregando", "deu erro" e "tentar de novo", e evita buscar de novo à toa: os dados do mapa mudam pouco, então ficam válidos por 5 minutos.
 
@@ -205,14 +213,16 @@ Toda a regra do jogo está em funções puras (`reveal.ts`, `geo.ts`, `api.ts`),
 
 **GeoJSON** é um formato JSON para geometrias: pontos, linhas e polígonos com coordenadas `[longitude, latitude]` (nessa ordem!). O mapa desenha cada "fonte" de dados como **camadas**, de baixo para cima:
 
-| Fonte | Camada | Como aparece | Zoom |
+| Camada | Fonte | Como aparece | Zoom |
 | --- | --- | --- | --- |
 | `veil` | um polígono do tamanho do mundo | véu escuro leve: o Brasil "apagado" | todos |
-| `area-estado` | contornos dos estados com pontos | brilho ocre proporcional + contorno | 0 a 6 |
-| `area-municipio` | contornos dos municípios com pontos | brilho ocre proporcional + contorno | 5 a 10 |
-| `points` | um círculo por ponto | cinza, anel ocre ou ocre cheio, com brilho | todos |
-
-As faixas de zoom de estados e municípios se sobrepõem um pouco, para a transição ser suave.
+| `estado-progress` | estados com pontos | brilho ocre proporcional | < 5 |
+| `municipio-progress` | municípios com pontos | brilho ocre proporcional | 5 a 9 |
+| `municipality-outlines` | todos os municípios dos estados com pontos | linha fina clara | ≥ 5 |
+| `state-outlines` | todos os estados | linha clara | todos |
+| `municipio-highlight` | municípios com pontos | contorno ocre (cidade destacada) | ≥ 5 |
+| `estado-highlight` | estados com pontos | contorno ocre (estado destacado) | < 11 |
+| `points` | um círculo por ponto | cinza, anel ocre ou ocre cheio, com brilho | ≥ 5 |
 
 ### Paleta noturna e ordem das camadas
 
@@ -230,7 +240,8 @@ Esta seção registra as versões anteriores, porque elas ensinam tanto quanto a
 
 1. **Células H3 fixas.** Primeiro, cada ponto acendia um hexágono da grade **H3** (uma grade de hexágonos que cobre o planeta, com várias resoluções) de cerca de 0,1 km². Problema: no zoom do país, a célula era invisível.
 2. **Hierarquia do H3.** Depois, hexágonos maiores (bairro, cidade, estado aproximados) brilhavam na proporção de pontos descobertos. Funcionava, mas os hexágonos **não eram os limites reais**: o estado de São Paulo ficava coberto por uns 3 hexágonos.
-3. **Limites oficiais do IBGE (atual).** A equipe decidiu usar os **contornos oficiais** de estados e municípios na vista ampla e, dentro da cidade, mostrar **só os pontos**. A diferença entre remoto e presencial passou da célula para o próprio ponto (anel × cheio).
+3. **Limites oficiais do IBGE.** A equipe decidiu usar os **contornos oficiais** de estados e municípios na vista ampla e, dentro da cidade, mostrar **só os pontos**. A diferença entre remoto e presencial passou da célula para o próprio ponto (anel × cheio).
+4. **Níveis de detalhe (atual).** A progressão ainda estava poluída: estradas e nomes de cidades pequenas apareciam cedo demais. A equipe definiu três vistas (Brasil, Estado, Município), cada uma mostrando só o necessário, e pediu o contorno de **todos** os municípios na vista Estado, para dar a noção de quanto falta.
 
 A ideia de revelar uma área ligada ao **tipo de conhecimento** (por exemplo, o território de uma aldeia) foi deixada para depois do protótipo, porque desenhar essa área seria uma **afirmação histórica** que precisa de fonte e de validação comunitária.
 

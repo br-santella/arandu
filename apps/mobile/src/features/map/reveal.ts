@@ -1,7 +1,9 @@
 // Map reveal rules (docs/03, docs/decisoes.md):
-// - wide views: official estados and municípios (IBGE) glow from 0% to 100% in
-//   proportion to discovered / published points inside them;
-// - inside a city: no areas, only points, lit or unlit;
+// - Brasil view: estado outlines; estados with points glow 0-100% in proportion
+//   to discovered / published points;
+// - estado view: all município outlines ("how many cities are left"); municípios
+//   with points glow the same way; no roads;
+// - município view: roads appear, the city outline stays highlighted, points lit or unlit;
 // - a point discovered remotely is drawn as a ring, a visited one as a filled dot;
 // - a later visit promotes remote -> presencial, never the opposite.
 
@@ -30,11 +32,19 @@ export type AdminArea = {
   geometry: { type: 'Polygon' | 'MultiPolygon'; coordinates: unknown };
 };
 
-/** Zoom ranges per level; inside a city (zoom >= 10) only points are drawn. */
-export const AREA_ZOOM: Record<AreaLevel, { minZoom: number; maxZoom: number }> = {
-  estado: { minZoom: 0, maxZoom: 6 },
-  municipio: { minZoom: 5, maxZoom: 10 },
-};
+/** An official outline (every estado; every município of estados with points). */
+export type Outline = { code: string; name: string; geometry: AdminArea['geometry'] };
+
+export function outlinesGeoJSON(outlines: Outline[]) {
+  return {
+    type: 'FeatureCollection' as const,
+    features: outlines.map((o) => ({
+      type: 'Feature' as const,
+      properties: { code: o.code, name: o.name },
+      geometry: o.geometry,
+    })),
+  };
+}
 
 /** Merge a new discovery into the list, applying the promotion rule. */
 export function recordDiscovery(existing: Discovery[], next: Discovery): Discovery[] {

@@ -69,3 +69,36 @@ export const STYLE_OVERRIDES: Override[] = [
     [id, 'text-halo-width', 1.2],
   ]),
 ];
+
+// ---------------------------------------------------------------------------
+// Level of detail (docs/decisoes.md). Three views:
+//   Brasil    zoom < 5  : estado divisions only
+//   Estado    5 to 9    : estado outline highlighted + all município outlines, no roads
+//   Município zoom >= 9 : roads and streets, city outline highlighted
+// ---------------------------------------------------------------------------
+
+export const VIEW_ZOOM = { estado: 5, municipio: 9 } as const;
+
+type BaseLayer = { id: string; 'source-layer'?: string; minzoom?: number };
+export type BaseLayerRule = { hide: true } | { minzoom: number };
+
+const LABEL_MINZOOM: Record<string, number> = {
+  place_city_large: VIEW_ZOOM.estado,
+  place_city: VIEW_ZOOM.estado,
+  place_town: 7,
+  place_village: VIEW_ZOOM.municipio,
+  place_suburb: VIEW_ZOOM.municipio,
+  place_other: VIEW_ZOOM.municipio,
+};
+
+/** How a layer of the base style must change; null = keep as is. */
+export function baseLayerRule(layer: BaseLayer): BaseLayerRule | null {
+  // The base style's estado borders are replaced by the official IBGE outlines.
+  if (layer.id === 'boundary_state') return { hide: true };
+  const sourceLayer = layer['source-layer'];
+  const roads = ['transportation', 'transportation_name', 'aeroway'];
+  const min =
+    sourceLayer && roads.includes(sourceLayer) ? VIEW_ZOOM.municipio : LABEL_MINZOOM[layer.id];
+  if (min === undefined) return null;
+  return { minzoom: Math.max(min, layer.minzoom ?? 0) };
+}

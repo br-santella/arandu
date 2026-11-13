@@ -24,6 +24,8 @@ export default function MapScreen() {
   const query = useQuery({ queryKey: ['map-data'], queryFn: fetchMapData });
   const points = query.data?.points ?? [];
   const areas = query.data?.areas ?? [];
+  const stateOutlines = query.data?.stateOutlines ?? [];
+  const municipalityOutlines = query.data?.municipalityOutlines ?? [];
 
   // TODO(M2 2.7): persist locally and sync to Supabase.
   const [discoveries, setDiscoveries] = useState<Discovery[]>([]);
@@ -51,6 +53,8 @@ export default function MapScreen() {
         <RevealMap
           points={points}
           areas={areas}
+          stateOutlines={stateOutlines}
+          municipalityOutlines={municipalityOutlines}
           discoveries={discoveries}
           onPointPress={openPoint}
           focus={open}
