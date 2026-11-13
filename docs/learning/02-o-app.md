@@ -186,6 +186,16 @@ Um polígono com buracos tem um anel externo e anéis internos. A névoa é exat
 
 O maplibre-gl processa os tiles num **worker**: um pedaço de JavaScript que roda em paralelo, sem travar a tela. Na versão 6, o worker é um arquivo separado, que o bundler do Expo não copia sozinho. Sem ele, o mapa fica preto. A solução está em `scripts/copy-maplibre-worker.mjs`: a cada `npm install` (pelo script `postinstall`), o worker é copiado para `public/maplibre/`, e o mapa aponta para ele com `setWorkerUrl`.
 
+### Paleta noturna e ordem das camadas
+
+O estilo `dark` original deixava a terra quase preta e o oceano só um pouco mais claro; com a névoa por cima, mal se via o Brasil. O arquivo `mapTheme.ts` troca as cores de algumas camadas do estilo, no espírito do "modo noturno" dos mapas comerciais: terra cinza-esverdeada, oceano mais escuro, fronteiras e nomes de cidades claros.
+
+A **ordem das camadas** também importa: o mapa desenha de baixo para cima. A névoa e as células são inseridas **antes da primeira camada de rótulos**, então os nomes ficam sempre por cima e legíveis.
+
+### Um bug que só a revisão humana pegou
+
+Na primeira versão, alguns pontos apareciam como "Descoberto à distância" na lista, mas não acendiam no mapa. A causa: antes de atualizar o desenho, o código conferia `isStyleLoaded()`, que devolve falso **enquanto há tiles carregando** (por exemplo, durante o voo até um ponto). Nesse caso, a atualização era descartada em silêncio. A correção foi tirar essa condição: as fontes já existem depois do carregamento inicial, e antes dele o mapa usa os dados mais recentes. O cenário (descobrir pontos com o mapa em movimento) foi reproduzido no navegador automatizado para confirmar a correção.
+
 ### Como o mapa foi verificado
 
 Além dos testes, o mapa foi aberto num Chrome sem janela (*headless*), controlado por um script, que clicou nos pontos e tirou capturas de tela. Foi assim que apareceram dois problemas que os testes não pegam: o worker ausente (mapa preto) e a névoa clara demais, que fazia a célula acesa parecer **mais escura** que o entorno.

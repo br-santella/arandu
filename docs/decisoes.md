@@ -20,6 +20,7 @@
 | 2026-11-12 | **Protótipo só web por enquanto**; Android e iOS depois que a web estiver validada | Testes em aparelho dependem de dispositivos que a equipe não tem disponíveis agora; a web é a versão da demonstração. No celular, o mapa mostra um aviso |
 | 2026-11-12 | Mapa web: `maplibre-gl` 6 com estilo `dark` do OpenFreeMap; rótulos priorizam `name:pt` | Gratuito, sem chave; nomes em português quando os tiles têm |
 | 2026-11-12 | Worker do maplibre copiado para `public/maplibre/` no `postinstall` e indicado com `setWorkerUrl` | O bundler do Expo não empacota o worker separado da v6; a cópia acompanha sempre a versão instalada |
+| 2026-11-12 | **Paleta de "modo noturno"** sobre o estilo `dark` (`mapTheme.ts`): terra cinza-esverdeada, oceano mais escuro, fronteiras e nomes claros; névoa a 50% e **abaixo dos rótulos** | Revisão da equipe: no estilo original a terra (rgb 12) e o oceano (rgb 27) quase não se distinguiam, e a névoa a 80% escondia o Brasil. Substitui a decisão abaixo sobre a opacidade |
 | 2026-11-12 | Névoa mais escura que o mapa base (`#05080A`, 80%) | Com a névoa na cor de fundo, a célula revelada parecia mais escura que o entorno; agora "acender" fica visivelmente mais claro |
 | 2026-11-12 | Ao abrir um ponto, o mapa voa até ele (zoom 15) | Células de resolução 9 não aparecem no zoom do país |
 | 2026-11-12 | Lista de pontos ao lado do mapa, com estado em texto | Alternativa acessível ao mapa (teclado e leitor de tela) e entrada da exploração remota |

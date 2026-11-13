@@ -4,6 +4,7 @@ Uma linha por mudança que afete esta pasta. Mais recente no topo.
 
 | Data | Mudança | Documentos afetados |
 | --- | --- | --- |
+| 2026-11-12 | Mapa: paleta noturna (`mapTheme.ts`), névoa a 50% abaixo dos rótulos; corrigido descarte de atualizações durante carregamento de tiles | 01 |
 | 2026-11-12 | Mapa web (maplibre-gl 6, OpenFreeMap dark), névoa com buracos por célula H3 (res. 9), contorno para remota e preenchimento para presencial, lista acessível, cartão provisório; protótipo só web | 01 |
 | 2026-11-12 | Regras da exploração remota: todos os pontos liberados, acende ao fechar o cartão, peso igual na meta, sem permissão de localização | 03 |
 | 2026-11-12 | Modelos definidos: `qwen3.5:9b` (raciocínio desligado, penalidades zeradas) e `qwen3-embedding:0.6b` (instrução só na consulta); `bge-m3` vira reserva | 01, 04, doc 04 |

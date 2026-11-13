@@ -11,6 +11,7 @@ import {
 import { useEffect, useMemo, useRef } from 'react';
 
 import { colors, palette } from '../../theme/colors';
+import { FOG_OPACITY, mapColors, STYLE_OVERRIDES } from './mapTheme';
 import { fogGeoJSON, litCells, litCellsGeoJSON, pointsGeoJSON } from './reveal';
 import type { RevealMapProps } from './RevealMap.types';
 
@@ -54,6 +55,13 @@ export function RevealMap({ points, discoveries, onPointPress, focus }: RevealMa
     m.addControl(new NavigationControl({ showCompass: false }), 'top-right');
 
     m.on('load', () => {
+      // Night-mode palette: readable land/ocean contrast, light borders and labels.
+      for (const [layerId, property, value] of STYLE_OVERRIDES) {
+        // All overrides are paint properties; skip layers a future style may drop.
+        if (!m.getLayer(layerId)) continue;
+        m.setPaintProperty(layerId, property as Parameters<typeof m.setPaintProperty>[1], value);
+      }
+
       // Prefer Portuguese place names when the tiles provide them.
       for (const layer of m.getStyle().layers) {
         if (layer.type === 'symbol' && m.getLayoutProperty(layer.id, 'text-field')) {
@@ -69,26 +77,29 @@ export function RevealMap({ points, discoveries, onPointPress, focus }: RevealMa
       m.addSource('cells', { type: 'geojson', data: latest.current.cells });
       m.addSource('points', { type: 'geojson', data: latest.current.points });
 
+      // Fog and cells go below the first label layer, so place names stay bright.
+      const firstLabel = m.getStyle().layers.find((l) => l.type === 'symbol')?.id;
+
       m.addLayer({
         id: 'fog',
         type: 'fill',
         source: 'fog',
-        // Fog darker than the base map, so revealed cells read as brighter ("lit").
-        paint: { 'fill-color': '#05080A', 'fill-opacity': 0.8 },
-      });
+        // Dims unrevealed areas; revealed cells (holes) read as brighter ("lit").
+        paint: { 'fill-color': mapColors.fog, 'fill-opacity': FOG_OPACITY },
+      }, firstLabel);
       m.addLayer({
         id: 'cells-fill',
         type: 'fill',
         source: 'cells',
         filter: ['==', ['get', 'mode'], 'presencial'],
         paint: { 'fill-color': palette.ochre, 'fill-opacity': 0.22 },
-      });
+      }, firstLabel);
       m.addLayer({
         id: 'cells-outline',
         type: 'line',
         source: 'cells',
         paint: { 'line-color': palette.ochre, 'line-width': 2 },
-      });
+      }, firstLabel);
       m.addLayer({
         id: 'points-glow',
         type: 'circle',
@@ -127,7 +138,10 @@ export function RevealMap({ points, discoveries, onPointPress, focus }: RevealMa
   useEffect(() => {
     latest.current = data;
     const m = map.current;
-    if (!m || !m.isStyleLoaded()) return;
+    // Do NOT gate on isStyleLoaded(): it is false while tiles load (e.g. during
+    // flyTo), which silently dropped updates and left discovered points unlit.
+    // Sources exist once 'load' ran; before that, the load handler reads latest.current.
+    if (!m) return;
     (m.getSource('fog') as GeoJSONSource | undefined)?.setData(data.fog);
     (m.getSource('cells') as GeoJSONSource | undefined)?.setData(data.cells);
     (m.getSource('points') as GeoJSONSource | undefined)?.setData(data.points);
