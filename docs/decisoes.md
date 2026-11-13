@@ -17,6 +17,13 @@
 | 2026-11-12 | Paleta de texto testada automaticamente contra WCAG AA (4,5:1) | Acessibilidade garantida por teste, não por revisão manual |
 | 2026-11-12 | Supabase CLI 3.1.0 via `npx`; login anônimo ativado no `config.toml` | Sem instalação global; usuário anônimo é a base da privacidade (docs/04, decisão 4) |
 | 2026-11-12 | Projeto Supabase remoto `pgdrpfauuxaxvvnqozzv` (plano gratuito). Valores públicos em `.env.remote` (fora do git); secret key, service role e senha do banco nunca no repositório nem no chat | Separar ambiente local e remoto; chaves secretas só em `supabase secrets` e `.env` |
+| 2026-11-12 | **Protótipo só web por enquanto**; Android e iOS depois que a web estiver validada | Testes em aparelho dependem de dispositivos que a equipe não tem disponíveis agora; a web é a versão da demonstração. No celular, o mapa mostra um aviso |
+| 2026-11-12 | Mapa web: `maplibre-gl` 6 com estilo `dark` do OpenFreeMap; rótulos priorizam `name:pt` | Gratuito, sem chave; nomes em português quando os tiles têm |
+| 2026-11-12 | Worker do maplibre copiado para `public/maplibre/` no `postinstall` e indicado com `setWorkerUrl` | O bundler do Expo não empacota o worker separado da v6; a cópia acompanha sempre a versão instalada |
+| 2026-11-12 | Névoa mais escura que o mapa base (`#05080A`, 80%) | Com a névoa na cor de fundo, a célula revelada parecia mais escura que o entorno; agora "acender" fica visivelmente mais claro |
+| 2026-11-12 | Ao abrir um ponto, o mapa voa até ele (zoom 15) | Células de resolução 9 não aparecem no zoom do país |
+| 2026-11-12 | Lista de pontos ao lado do mapa, com estado em texto | Alternativa acessível ao mapa (teclado e leitor de tela) e entrada da exploração remota |
+| 2026-11-12 | Hospedagem web precisa de fallback de SPA (toda rota serve `index.html`) | O app é `output: single`; sem fallback, abrir `/mapa` direto dá 404 |
 | 2026-11-12 | Exploração remota libera **todos** os pontos publicados, sem sequência | Uso em sala (professor mostra qualquer ponto) e critério de pronto do protótipo |
 | 2026-11-12 | O ponto acende ao **fechar o cartão**, com ou sem resposta ao desafio | Mantém a leitura no ciclo; errar ou pular o desafio não bloqueia (docs/03) |
 | 2026-11-12 | Descobertas remotas valem o mesmo que presenciais na meta semanal e nas áreas acesas | Não penalizar quem não pode se deslocar; a diferença é só visual (contorno vs. preenchimento) |

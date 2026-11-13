@@ -118,7 +118,9 @@ Riscos e mitigações dos planos gratuitos estão em [`docs/04-arquitetura-tecni
 | Testes de RLS e do índice do guia | `supabase/tests/database/rls.test.sql` | 🟢 Implementado |
 | Seed do piloto | `supabase/seed/` | ⚪ Planejado (depende do conteúdo da equipe) |
 | App Expo: base (tema, fontes, rotas, boas-vindas) | `apps/mobile/src/` | 🟢 Implementado (12 testes, typecheck, lint e export web ok; ainda não aberto num aparelho) |
-| App Expo: telas de mapa, cartão, desafios, guia | `apps/mobile/src/app/` | ⚪ Planejado (rotas vazias, M2–M6) |
+| App: mapa web com névoa, células H3 e exploração remota | `apps/mobile/src/features/map/`, `src/app/mapa.tsx` | 🟢 Implementado na web (26 testes; verificado com captura de tela num navegador real); usa pontos de teste locais |
+| App: proximidade, pontos do Supabase, persistência | `apps/mobile/src/` | ⚪ Planejado (M2: 2.4, 2.5, 2.7) |
+| App: cartão, desafios, progresso, guia | `apps/mobile/src/app/` | ⚪ Planejado (M3–M6) |
 | Painel de curadoria | `apps/admin/` | ⚪ Planejado |
 | Pipeline: configuração e cliente de IA trocável | `pipeline/arandu_pipeline/config.py`, `llm.py` | 🟢 Implementado (14 testes com endpoint simulado; saída estruturada e embeddings verificados contra `qwen3.5:9b` e `qwen3-embedding:0.6b` reais) |
 | Pipeline: etapas ingest → publish | `pipeline/arandu_pipeline/` | ⚪ Planejado (M4) |

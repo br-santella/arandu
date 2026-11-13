@@ -35,12 +35,12 @@ Responsáveis: **B** = Brunna (app, produto, parcerias), **G** = Grazielle (IA, 
 
 | # | Tarefa | Resp. | Tam. |
 | --- | --- | --- | --- |
-| 2.1 | Mapa MapLibre com estilo escuro centrado no Brasil | B | M |
-| 2.2 | Camada de "névoa" e grade de pontos apagados | B | M |
-| 2.3 | Revelação de células H3 ao descobrir um ponto (com testes) | B | M |
+| 2.1 | ✅ Mapa MapLibre com estilo escuro centrado no Brasil (web) | B | M |
+| 2.2 | ✅ Camada de "névoa" e pontos apagados (web) | B | M |
+| 2.3 | ✅ Revelação de células H3 ao descobrir um ponto (com testes) | B | M |
 | 2.4 | Pontos publicados no mapa vindos do Supabase | B | P |
-| 2.5 | Descoberta por proximidade calculada no dispositivo (com testes) | B | M |
-| 2.6 | Modo exploração remota | B | P |
+| 2.5 | ⏳ Descoberta por proximidade: cálculo pronto e testado; falta ligar a localização do navegador | B | M |
+| 2.6 | ✅ Modo exploração remota (web, com pontos de teste) | B | P |
 | 2.7 | Persistência local e sincronização de descobertas | B | M |
 
 **Pronto quando:** dá para descobrir os pontos do piloto e ver o mapa se acender.

@@ -29,6 +29,7 @@ Termos técnicos usados no Arandu, em ordem alfabética. Entre parênteses, o do
 | **Expo Router** | Sistema de telas em que cada arquivo de `src/app/` é uma rota (2) |
 | **Frontend** | A parte visível do sistema; no Arandu, o app (1) |
 | **Full-text search** | Busca por palavras, considerando variações (radicais) do idioma (3) |
+| **GeoJSON** | Formato JSON para geometrias; coordenadas na ordem [longitude, latitude] (2) |
 | **GiST, GIN, HNSW** | Tipos de índice: para geometria, para texto e para vetores (3, 5) |
 | **Git** | Sistema que guarda o histórico de mudanças do projeto (7) |
 | **GitHub Actions** | Serviço do GitHub que roda os workflows de CI (7) |
@@ -68,9 +69,11 @@ Termos técnicos usados no Arandu, em ordem alfabética. Entre parênteses, o do
 | **Secret key / service role** | Chave que ignora as regras de acesso; nunca vai para o app (4) |
 | **Secrets** | Valores sensíveis guardados num serviço (GitHub, Supabase), fora do código (4, 7) |
 | **Security definer** | Função do banco que roda com permissão do dono para responder uma pergunta fixa (4) |
+| **Headless** (navegador) | Navegador rodando sem janela, controlado por um programa; usado para testar telas (2) |
 | **Seed** | Conteúdo inicial carregado no banco (3) |
 | **Servidor** | Computador que guarda dados e responde aos clientes (1) |
 | **Similaridade de cosseno** | Medida de quão parecidos são dois vetores, pelo ângulo entre eles (5) |
+| **SPA** | Aplicação de página única: um `index.html` carrega o app, que troca as telas sozinho (2) |
 | **Slug** | Identificador legível usado em endereços: `nome-do-lugar` (2) |
 | **SQL** | Linguagem para criar e consultar bancos de dados relacionais (3) |
 | **Supabase** | Plataforma com banco, login, API, arquivos e funções prontos (3) |
@@ -84,4 +87,5 @@ Termos técnicos usados no Arandu, em ordem alfabética. Entre parênteses, o do
 | **Variável de ambiente** | Configuração lida de fora do código, como do arquivo `.env` (4) |
 | **Vetor** | Lista ordenada de números; ver embedding (5) |
 | **WCAG** | Norma internacional de acessibilidade web; exige contraste de 4,5:1 para texto (2) |
+| **Worker** | Código JavaScript que roda em paralelo, sem travar a tela; o mapa usa um para os tiles (2) |
 | **Workflow** (CI) | Arquivo que descreve uma sequência de verificações automáticas (7) |

@@ -146,9 +146,55 @@ it('matches known WCAG reference values', () => {
 
 **Lint** é a verificação de estilo e de erros comuns no código (por exemplo, variável declarada e nunca usada).
 
-## 2.8 O que vem no M2: o mapa ⚪
+## 2.8 O mapa (M2)
 
-Esta seção descreve o plano. Ela será reescrita quando o mapa existir.
+Estado: 🟢 **na web**: mapa, névoa, células H3 e exploração remota, com pontos de teste. ⚪ Proximidade, pontos vindos do Supabase e salvamento das descobertas vêm nos próximos passos. No celular, o mapa mostra por enquanto um aviso: o protótipo é **só web** até ser validado.
+
+### Os arquivos do mapa
+
+| Arquivo | Papel |
+| --- | --- |
+| `src/lib/geo.ts` | Distância entre dois pontos (haversine) e teste de raio |
+| `src/features/map/reveal.ts` | Regras da revelação: célula de cada ponto, promoção remota → presencial, névoa e camadas em GeoJSON |
+| `src/features/map/RevealMap.web.tsx` | O mapa no navegador (maplibre-gl) |
+| `src/features/map/RevealMap.tsx` | Versão para celular (por enquanto, só um aviso) |
+| `src/features/map/PointSheet.tsx` | Cartão provisório; fechar o cartão acende o ponto |
+| `src/features/map/fixtures.ts` | Pontos de **teste**, fictícios, até o app ler do Supabase |
+| `src/app/mapa.tsx` | A tela: mapa, contador, lista acessível de pontos |
+
+### Arquivos por plataforma
+
+Repare nos nomes `RevealMap.web.tsx` e `RevealMap.tsx`. O bundler do Expo escolhe o arquivo **pela plataforma**: no navegador usa o `.web.tsx`; no celular, o outro. As duas versões seguem o mesmo "contrato" de props (`RevealMap.types.ts`), então a tela não precisa saber qual está rodando.
+
+### Lógica separada da tela
+
+Toda a regra do jogo está em funções puras (`reveal.ts`, `geo.ts`), que recebem dados e devolvem dados, sem desenhar nada. Por isso são fáceis de testar: 14 testes conferem, por exemplo, que uma visita promove uma descoberta remota a presencial e nunca o contrário. Um desses testes pegou um bug real: o anel do hexágono saía com o último ponto repetido.
+
+### GeoJSON e camadas
+
+**GeoJSON** é um formato JSON para geometrias: pontos, linhas e polígonos com coordenadas `[longitude, latitude]` (nessa ordem!). O mapa recebe três "fontes" GeoJSON e desenha cada uma como **camada**:
+
+| Fonte | Camada | Como aparece |
+| --- | --- | --- |
+| `fog` | um polígono do tamanho do mundo **com um buraco para cada célula acesa** | névoa escura; onde há buraco, o mapa aparece |
+| `cells` | um hexágono por célula acesa | contorno ocre (remota) e preenchimento ocre (presencial) |
+| `points` | um ponto por local | cinza apagado ou ocre aceso, com brilho |
+
+Um polígono com buracos tem um anel externo e anéis internos. A névoa é exatamente isso: o mundo inteiro menos as células descobertas.
+
+### O worker do maplibre
+
+O maplibre-gl processa os tiles num **worker**: um pedaço de JavaScript que roda em paralelo, sem travar a tela. Na versão 6, o worker é um arquivo separado, que o bundler do Expo não copia sozinho. Sem ele, o mapa fica preto. A solução está em `scripts/copy-maplibre-worker.mjs`: a cada `npm install` (pelo script `postinstall`), o worker é copiado para `public/maplibre/`, e o mapa aponta para ele com `setWorkerUrl`.
+
+### Como o mapa foi verificado
+
+Além dos testes, o mapa foi aberto num Chrome sem janela (*headless*), controlado por um script, que clicou nos pontos e tirou capturas de tela. Foi assim que apareceram dois problemas que os testes não pegam: o worker ausente (mapa preto) e a névoa clara demais, que fazia a célula acesa parecer **mais escura** que o entorno.
+
+### SPA e hospedagem
+
+A versão web é uma **SPA** (single-page application): um único `index.html` carrega o app, e o próprio app troca de tela conforme o endereço. Por isso a hospedagem precisa de um **fallback**: qualquer endereço (como `/mapa`) deve devolver o `index.html`. Sem isso, abrir `/mapa` direto dá erro 404.
+
+### Como foi planejado (e o que falta)
 
 ### Mapas digitais: estilo e tiles
 
