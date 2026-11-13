@@ -154,6 +154,7 @@ classDiagram
     +text name
     +text state_code
     +geometry geom
+    +geometry border
   }
 
   %% ---------- Enums ----------
@@ -245,6 +246,7 @@ Notas de leitura:
 | `point_purge_chunks` | trigger `after update of status, sensitivity` em `point` | Apaga os chunks quando o ponto sai de `publicado` ou vira `restrito` |
 | `point_assign_admin_area` | trigger `before insert or update of location` em `point` | Preenche estado e município pelo contorno que contém o ponto (PostGIS `ST_Covers`) |
 | `refresh_point_admin_codes()` | função (só service role) | Recalcula os códigos de todos os pontos; rodada após importar as malhas |
+| `refresh_admin_derived()` | função (só service role) | Cria a forma do país (`BR`) e calcula as divisas internas (`border`) sem litoral; rodada após importar as malhas |
 | `is_curator()` | função `security definer` | O usuário atual está em `curator`? |
 | `is_point_public(id)` | função `security definer` | Ponto publicado e não restrito? |
 | `is_source_public(id)` | função `security definer` | Fonte ligada a ponto, desafio ou topônimo publicado? |
@@ -264,6 +266,7 @@ Notas de leitura:
 | View | Para quê | Segurança |
 | --- | --- | --- |
 | `published_point` | Pontos publicados com `lat`/`lng` numéricos e códigos IBGE, no formato que o app usa | `security_invoker` + filtro explícito de publicados e não restritos |
-| `area_with_points` | Só estados e municípios com pontos publicados, com total de pontos e contorno em GeoJSON | Idem; o app baixa só essas áreas |
-| `state_outline` | Contorno de todos os estados (vista Brasil) | `security_invoker`; `admin_area` é pública |
-| `municipality_outline` | Contorno de todos os municípios dos estados que têm pontos publicados (vista Estado) | Idem; o filtro de estados usa só pontos publicados |
+| `area_with_points` | Só estados e municípios com pontos publicados: total de pontos, polígono (preenchimento) e divisas (destaque) | Idem; o app baixa só essas áreas |
+| `state_outline` | Divisas internas (linhas, sem litoral) e ponto do nome de todos os estados (vista Brasil) | `security_invoker`; `admin_area` é pública |
+| `municipality_outline` | Divisas internas e ponto do nome de todos os municípios dos estados que têm pontos publicados (vista Estado) | Idem; o filtro de estados usa só pontos publicados |
+| `country_shape` | Forma do Brasil (união dos estados), para a máscara | Idem |

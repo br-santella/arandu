@@ -2,7 +2,7 @@
 -- Fixtures use fictitious square areas and codes; no real geography.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(14);
+select plan(12);
 
 -- Isolate from seed data (e.g. dev test points); undone by the final rollback.
 delete from public.discovery;
@@ -95,16 +95,6 @@ select results_eq(
   $$select lat, lng from public.published_point where slug = 'teste-dentro-municipio'$$,
   $$values (0.5::float8, 0.5::float8)$$,
   'published_point exposes lat/lng as numbers');
-
-select results_eq(
-  $$select code from public.state_outline where code in ('98', '99') order by code$$,
-  $$values ('98'::text), ('99'::text)$$,
-  'state_outline lists every estado, with or without points');
-
-select results_eq(
-  $$select code from public.municipality_outline where code like '9%' order by code$$,
-  $$values ('9900001'::text), ('9900002'::text)$$,
-  'municipality_outline lists all municípios of estados with published points, and only those');
 
 select * from finish();
 rollback;

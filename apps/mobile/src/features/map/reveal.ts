@@ -24,16 +24,41 @@ export type Discovery = { pointId: string; mode: DiscoveryMode };
 
 export type AreaLevel = 'estado' | 'municipio';
 
+export type Geometry = { type: string; coordinates: unknown };
+
 /** An official area that contains published points (from the area_with_points view). */
 export type AdminArea = {
   code: string;
   level: AreaLevel;
   name: string;
-  geometry: { type: 'Polygon' | 'MultiPolygon'; coordinates: unknown };
+  /** Polygon, for the progress fill. */
+  geometry: Geometry;
+  /** Inner borders only (no coast), for the highlight line. */
+  border: Geometry | null;
 };
 
-/** An official outline (every estado; every município of estados with points). */
-export type Outline = { code: string; name: string; geometry: AdminArea['geometry'] };
+/** Inner borders (lines) of every estado, or of every município of estados with points. */
+export type Outline = {
+  code: string;
+  name: string;
+  geometry: Geometry;
+  /** A point inside the area, where its name is written. */
+  label: Geometry | null;
+};
+
+/** Name labels from IBGE outlines (replace the base style's place names). */
+export function outlineLabelsGeoJSON(outlines: Outline[]) {
+  return {
+    type: 'FeatureCollection' as const,
+    features: outlines
+      .filter((o) => o.label)
+      .map((o) => ({
+        type: 'Feature' as const,
+        properties: { code: o.code, name: o.name },
+        geometry: o.label as Geometry,
+      })),
+  };
+}
 
 export function outlinesGeoJSON(outlines: Outline[]) {
   return {
@@ -95,6 +120,63 @@ export function areasGeoJSON(areas: AdminArea[], progress: Map<string, AreaProgr
           geometry: a.geometry,
         };
       }),
+  };
+}
+
+/** Highlight lines (inner borders) for areas with points, tagged with progress. */
+export function areaBordersGeoJSON(
+  areas: AdminArea[],
+  progress: Map<string, AreaProgress>,
+  level: AreaLevel,
+) {
+  return {
+    type: 'FeatureCollection' as const,
+    features: areas
+      .filter((a) => a.level === level && a.border)
+      .map((a) => {
+        const p = progress.get(a.code) ?? { discovered: 0, total: 0, ratio: 0 };
+        return {
+          type: 'Feature' as const,
+          properties: { code: a.code, name: a.name, ...p },
+          geometry: a.border as Geometry,
+        };
+      }),
+  };
+}
+
+type Ring = number[][];
+
+/**
+ * A world-sized polygon with one hole per part of the country shape: everything
+ * outside Brazil gets covered, so only Brazil is shown. Without the country
+ * shape (still loading), there is no mask: covering the whole world would hide Brazil too.
+ */
+export function countryMaskGeoJSON(country: Geometry | null) {
+  const empty = { type: 'FeatureCollection' as const, features: [] as unknown[] };
+  const world: Ring = [
+    [-180, -85],
+    [180, -85],
+    [180, 85],
+    [-180, 85],
+    [-180, -85],
+  ];
+  let holes: Ring[];
+  if (country?.type === 'Polygon') {
+    holes = [(country.coordinates as Ring[])[0]];
+  } else if (country?.type === 'MultiPolygon') {
+    holes = (country.coordinates as Ring[][]).map((polygon) => polygon[0]);
+  } else {
+    return empty;
+  }
+  return {
+    type: 'FeatureCollection' as const,
+    features: [
+      {
+        type: 'Feature' as const,
+        properties: {},
+        geometry: { type: 'Polygon' as const, coordinates: [world, ...holes] },
+      },
+    ] as unknown[],
   };
 }
 

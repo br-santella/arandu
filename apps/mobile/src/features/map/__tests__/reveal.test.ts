@@ -2,8 +2,11 @@ import {
   type AdminArea,
   type Discovery,
   type MapPoint,
+  areaBordersGeoJSON,
   areaProgress,
   areasGeoJSON,
+  countryMaskGeoJSON,
+  outlineLabelsGeoJSON,
   pointsGeoJSON,
   recordDiscovery,
 } from '../reveal';
@@ -79,10 +82,20 @@ describe('areaProgress', () => {
 
 describe('areasGeoJSON', () => {
   const square = { type: 'Polygon' as const, coordinates: [[[0, 0], [1, 0], [1, 1], [0, 0]]] };
+  const line = { type: 'MultiLineString' as const, coordinates: [[[0, 0], [0, 1]]] };
   const areas: AdminArea[] = [
-    { code: '99', level: 'estado', name: '[TESTE] Estado', geometry: square },
-    { code: '9900001', level: 'municipio', name: '[TESTE] Município', geometry: square },
+    { code: '99', level: 'estado', name: '[TESTE] Estado', geometry: square, border: line },
+    { code: '9900001', level: 'municipio', name: '[TESTE] Município', geometry: square, border: null },
   ];
+
+  it('builds highlight lines from inner borders, skipping areas without one', () => {
+    const progress = areaProgress(points, [remote('a')], 'estado');
+    const est = areaBordersGeoJSON(areas, progress, 'estado');
+    expect(est.features).toHaveLength(1);
+    expect(est.features[0].geometry).toBe(line);
+    expect(est.features[0].properties.ratio).toBeCloseTo(1 / 3);
+    expect(areaBordersGeoJSON(areas, new Map(), 'municipio').features).toHaveLength(0);
+  });
 
   it('keeps only the requested level and attaches progress', () => {
     const fc = areasGeoJSON(areas, areaProgress(points, [remote('a')], 'estado'), 'estado');
@@ -101,5 +114,38 @@ describe('pointsGeoJSON', () => {
   it('marks each point as apagado, remota or presencial', () => {
     const fc = pointsGeoJSON(points.slice(0, 3), [remote('a'), { pointId: 'b', mode: 'presencial' }]);
     expect(fc.features.map((f) => f.properties.mode)).toEqual(['remota', 'presencial', 'apagado']);
+  });
+});
+
+describe('countryMaskGeoJSON', () => {
+  const ring = [[0, 0], [1, 0], [1, 1], [0, 0]];
+  type MaskFeature = { geometry: { coordinates: unknown[] } };
+  const rings = (fc: { features: unknown[] }) => (fc.features[0] as MaskFeature).geometry.coordinates;
+
+  it('covers the world with one hole per part of the country', () => {
+    const mask = countryMaskGeoJSON({ type: 'MultiPolygon', coordinates: [[ring], [ring]] });
+    expect(rings(mask)).toHaveLength(1 + 2);
+    expect(rings(mask)[1]).toBe(ring);
+  });
+
+  it('accepts a single polygon', () => {
+    expect(rings(countryMaskGeoJSON({ type: 'Polygon', coordinates: [ring] }))).toHaveLength(2);
+  });
+
+  it('draws no mask while the country shape is not loaded (would hide Brazil too)', () => {
+    expect(countryMaskGeoJSON(null).features).toHaveLength(0);
+  });
+});
+
+describe('outlineLabelsGeoJSON', () => {
+  it('turns outlines into name labels, skipping those without a label point', () => {
+    const line = { type: 'MultiLineString', coordinates: [] };
+    const fc = outlineLabelsGeoJSON([
+      { code: '99', name: '[TESTE] A', geometry: line, label: { type: 'Point', coordinates: [1, 2] } },
+      { code: '98', name: '[TESTE] B', geometry: line, label: null },
+    ]);
+    expect(fc.features).toHaveLength(1);
+    expect(fc.features[0].properties.name).toBe('[TESTE] A');
+    expect(fc.features[0].geometry.coordinates).toEqual([1, 2]);
   });
 });

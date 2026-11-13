@@ -120,8 +120,8 @@ Riscos e mitigações dos planos gratuitos estão em [`docs/04-arquitetura-tecni
 | Testes de RLS e do índice do guia | `supabase/tests/database/rls.test.sql` | 🟢 Implementado |
 | Seed do piloto | `supabase/seed/` | ⚪ Planejado (depende do conteúdo da equipe) |
 | App Expo: base (tema, fontes, rotas, boas-vindas) | `apps/mobile/src/` | 🟢 Implementado (12 testes, typecheck, lint e export web ok; ainda não aberto num aparelho) |
-| App: mapa web com três níveis de detalhe (Brasil, Estado, Município), estados e municípios do IBGE em gradiente, pontos e exploração remota, lendo o Supabase | `apps/mobile/src/features/map/`, `src/app/mapa.tsx` | 🟢 Implementado na web (36 testes; verificado com capturas de tela contra o Supabase local) |
-| Limites oficiais (IBGE) e classificação dos pontos | `supabase/migrations/20261112000200_admin_areas.sql`, `pipeline/arandu_pipeline/ibge_areas.py` | 🟢 Local (14 testes pgTAP, 4 pytest; importação real verificada). ⚪ Remoto: falta aplicar a migration e importar |
+| App: mapa web com três níveis de detalhe (Brasil, Estado, Município), estados e municípios do IBGE em gradiente, pontos e exploração remota, lendo o Supabase | `apps/mobile/src/features/map/`, `src/app/mapa.tsx` | 🟢 Implementado na web (42 testes; verificado com capturas de tela contra o Supabase local); só o Brasil, sem traço de litoral, nomes do IBGE |
+| Limites oficiais (IBGE) e classificação dos pontos | `supabase/migrations/20261112000200_admin_areas.sql`, `pipeline/arandu_pipeline/ibge_areas.py` | 🟢 Local (20 testes pgTAP, 4 pytest; importação real verificada, com forma do país e divisas). ⚪ Remoto: falta aplicar a migration e importar |
 | App: proximidade, persistência e sincronização | `apps/mobile/src/` | ⚪ Planejado (M2: 2.5, 2.7) |
 | App: cartão, desafios, progresso, guia | `apps/mobile/src/app/` | ⚪ Planejado (M3–M6) |
 | Painel de curadoria | `apps/admin/` | ⚪ Planejado |

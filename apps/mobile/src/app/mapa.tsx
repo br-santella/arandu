@@ -26,6 +26,7 @@ export default function MapScreen() {
   const areas = query.data?.areas ?? [];
   const stateOutlines = query.data?.stateOutlines ?? [];
   const municipalityOutlines = query.data?.municipalityOutlines ?? [];
+  const country = query.data?.country ?? null;
 
   // TODO(M2 2.7): persist locally and sync to Supabase.
   const [discoveries, setDiscoveries] = useState<Discovery[]>([]);
@@ -55,6 +56,7 @@ export default function MapScreen() {
           areas={areas}
           stateOutlines={stateOutlines}
           municipalityOutlines={municipalityOutlines}
+          country={country}
           discoveries={discoveries}
           onPointPress={openPoint}
           focus={open}

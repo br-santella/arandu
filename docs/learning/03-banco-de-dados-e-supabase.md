@@ -111,6 +111,11 @@ cd pipeline && uv run python -m arandu_pipeline.ibge_areas   # depois de cada db
 
 Cada ponto ganha automaticamente o código IBGE do estado (`state_code`, 2 dígitos) e do município (`municipality_code`, 7 dígitos). Quem faz isso é o trigger `point_assign_admin_area`, com uma operação clássica de geografia: ***point-in-polygon*** ("este ponto está dentro deste polígono?"), feita pela função `ST_Covers` do PostGIS.
 
+Depois de importar, a função `refresh_admin_derived()` calcula duas coisas que o mapa usa:
+
+- a **forma do Brasil** (`code = 'BR'`, `level = 'pais'`), unindo os 27 estados com `ST_Union`;
+- as **divisas internas** de cada estado e município (`border`): o contorno (`ST_Boundary`) menos uma faixa de ~1 km em volta do limite do país (`ST_Difference` com `ST_Buffer`), o que tira o litoral e as fronteiras internacionais.
+
 Se as malhas forem carregadas **depois** dos pontos, a função `refresh_point_admin_codes()` recalcula todos. O script de importação já a chama no final.
 
 ### Views: perguntas prontas

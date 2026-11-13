@@ -90,9 +90,11 @@ stateDiagram-v2
 
 | Vista | Zoom | O que aparece | Como acende |
 | --- | --- | --- | --- |
-| **Brasil** | < 5 | Só as divisões dos 27 estados | Estados com pontos: preenchimento = 0,55 × descobertos ÷ publicados, contorno ocre |
-| **Estado** | 5 a 9 | Contorno do estado destacado + contorno de todos os municípios; sem estradas; pontos | Municípios com pontos: mesmo gradiente, contorno ocre |
-| **Município** | ≥ 9 | Ruas, contorno da cidade destacado, pontos | Pontos: cinza (a descobrir), anel ocre (remota), ocre cheio (presencial) |
+| **Brasil** | < 5 | Só o Brasil (máscara sobre os outros países); divisas e nomes dos 27 estados (IBGE) | Estados com pontos: preenchimento = 0,55 × descobertos ÷ publicados, contorno ocre |
+| **Estado** | 5 a 9 | Divisas do estado destacadas + divisas de todos os municípios (nomes a partir do zoom 7); sem estradas; pontos | Municípios com pontos: mesmo gradiente, contorno ocre |
+| **Município** | ≥ 9 | Ruas e nomes de lugares, divisas da cidade destacadas, pontos |
+
+Nenhuma linha segue o litoral: estados e municípios mostram só as divisas internas. Pontos: cinza (a descobrir), anel ocre (remota), ocre cheio (presencial) |
 
 ### Revelação hierárquica por H3 (substituída)
 

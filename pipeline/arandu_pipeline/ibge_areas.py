@@ -7,7 +7,8 @@ Usage:
     uv run python -m arandu_pipeline.ibge_areas                 # local database
     DATABASE_URL=... uv run python -m arandu_pipeline.ibge_areas  # another database
 
-Idempotent: re-running updates existing rows. Afterwards it recomputes the
+Idempotent: re-running updates existing rows. Afterwards it computes the country
+shape and the inner borders (refresh_admin_derived()) and recomputes the
 estado/município codes of every point (refresh_point_admin_codes()).
 """
 
@@ -88,6 +89,8 @@ def load(rows: list[AreaRow], database_url: str) -> int:
 
     with psycopg.connect(database_url) as conn, conn.cursor() as cur:
         cur.executemany(UPSERT, [row.__dict__ for row in rows])
+        # Country shape (union of estados) and inner borders without the coast.
+        cur.execute("select public.refresh_admin_derived()")
         cur.execute("select public.refresh_point_admin_codes()")
         return cur.fetchone()[0]
 

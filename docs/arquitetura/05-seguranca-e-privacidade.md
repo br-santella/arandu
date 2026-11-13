@@ -57,7 +57,7 @@ Estado: 🟢 Implementado (13 testes pgTAP passando). Fonte: [`20261112000100_rl
 | `content_chunk` | — | — | Ler | Tudo (com trigger de guarda) |
 | `curator` | — | — | Ler | Tudo |
 | `admin_area` (IBGE, dado público) | Ler | Ler | Ler | Tudo |
-| Views `published_point`, `area_with_points`, `state_outline`, `municipality_outline` | Ler (só publicados, via RLS de quem pergunta) | Igual | Igual | Tudo |
+| Views `published_point`, `area_with_points`, `state_outline`, `municipality_outline`, `country_shape` | Ler (só publicados, via RLS de quem pergunta) | Igual | Igual | Tudo |
 
 "—" = sem acesso. Sem política, o Postgres nega por padrão.
 

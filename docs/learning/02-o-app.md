@@ -224,6 +224,22 @@ Toda a regra do jogo está em funções puras (`reveal.ts`, `geo.ts`, `api.ts`),
 | `estado-highlight` | estados com pontos | contorno ocre (estado destacado) | < 11 |
 | `points` | um círculo por ponto | cinza, anel ocre ou ocre cheio, com brilho | ≥ 5 |
 
+### Só o Brasil: a máscara
+
+Os tiles do mapa trazem o mundo inteiro. Para mostrar **só o Brasil**, o app desenha uma **máscara**: um polígono do tamanho do mundo, pintado da cor do mar, com um **buraco no formato do Brasil** (um buraco para cada parte, inclusive as ilhas). Ela fica **por cima** dos nomes do estilo base, então cobre também os nomes de outros países. Uma trava de câmera (`maxBounds`) impede afastar o mapa para longe do país.
+
+A forma do Brasil é a **união dos 27 estados** do IBGE, calculada uma vez no banco (ver [documento 3](03-banco-de-dados-e-supabase.md)). Enquanto ela não carregou, o app **não desenha máscara nenhuma**: um mundo coberto sem buraco esconderia o Brasil também. Esse caso foi pego relendo um teste que passava com a expectativa errada.
+
+### Divisas sem litoral
+
+O contorno de um estado costeiro inclui o litoral. Desenhado como linha, ele soma um traço extra à costa, que já aparece pelo contraste entre terra e mar. Por isso, as linhas de estados e municípios são só as **divisas internas**: o contorno **menos** o limite externo do país (o litoral e as fronteiras com outros países).
+
+Como as malhas de estados e de municípios do IBGE são simplificadas separadamente, os litorais delas não coincidem perfeitamente. O banco usa uma **tolerância** de cerca de 1 km: pedaços de linha a menos de 1 km do limite do país são descartados.
+
+### Nomes próprios, do IBGE
+
+A camada de nomes do estilo base mistura estados brasileiros com províncias de países vizinhos, e os nomes estrangeiros "vazavam" pela borda da máscara. A solução foi desenhar **nossos próprios nomes**: cada estado e município vem com um ponto dentro da sua área (`ST_PointOnSurface`), onde o nome é escrito. Nas vistas Brasil e Estado aparecem só esses nomes; os do estilo base voltam apenas na vista Município.
+
 ### Paleta noturna e ordem das camadas
 
 O estilo `dark` original deixava a terra quase preta e o oceano só um pouco mais claro; mal se via o Brasil. O arquivo `mapTheme.ts` troca as cores de algumas camadas do estilo, no espírito do "modo noturno" dos mapas comerciais: terra cinza-esverdeada, oceano mais escuro, fronteiras e nomes de cidades claros.
@@ -241,7 +257,8 @@ Esta seção registra as versões anteriores, porque elas ensinam tanto quanto a
 1. **Células H3 fixas.** Primeiro, cada ponto acendia um hexágono da grade **H3** (uma grade de hexágonos que cobre o planeta, com várias resoluções) de cerca de 0,1 km². Problema: no zoom do país, a célula era invisível.
 2. **Hierarquia do H3.** Depois, hexágonos maiores (bairro, cidade, estado aproximados) brilhavam na proporção de pontos descobertos. Funcionava, mas os hexágonos **não eram os limites reais**: o estado de São Paulo ficava coberto por uns 3 hexágonos.
 3. **Limites oficiais do IBGE.** A equipe decidiu usar os **contornos oficiais** de estados e municípios na vista ampla e, dentro da cidade, mostrar **só os pontos**. A diferença entre remoto e presencial passou da célula para o próprio ponto (anel × cheio).
-4. **Níveis de detalhe (atual).** A progressão ainda estava poluída: estradas e nomes de cidades pequenas apareciam cedo demais. A equipe definiu três vistas (Brasil, Estado, Município), cada uma mostrando só o necessário, e pediu o contorno de **todos** os municípios na vista Estado, para dar a noção de quanto falta.
+4. **Níveis de detalhe.** A progressão ainda estava poluída: estradas e nomes de cidades pequenas apareciam cedo demais. A equipe definiu três vistas (Brasil, Estado, Município), cada uma mostrando só o necessário, e pediu o contorno de **todos** os municípios na vista Estado, para dar a noção de quanto falta.
+5. **Só o Brasil, sem litoral (atual).** A equipe pediu para esconder os outros países e tirar a linha costeira. Vieram a máscara, as divisas internas e os nomes próprios do IBGE.
 
 A ideia de revelar uma área ligada ao **tipo de conhecimento** (por exemplo, o território de uma aldeia) foi deixada para depois do protótipo, porque desenhar essa área seria uma **afirmação histórica** que precisa de fonte e de validação comunitária.
 

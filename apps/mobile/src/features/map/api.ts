@@ -1,7 +1,7 @@
 // Reads the map data from Supabase: published points and the official areas
 // (IBGE) that contain them. Both views apply RLS and the published filter.
 import { supabase } from '../../lib/supabase';
-import type { AdminArea, MapPoint, Outline } from './reveal';
+import type { AdminArea, Geometry, MapPoint, Outline } from './reveal';
 
 export type PublishedPointRow = {
   id: string;
@@ -14,12 +14,7 @@ export type PublishedPointRow = {
   municipality_code: string | null;
 };
 
-export type AreaRow = {
-  code: string;
-  level: AdminArea['level'];
-  name: string;
-  geometry: AdminArea['geometry'];
-};
+export type AreaRow = AdminArea;
 
 export function toMapPoint(row: PublishedPointRow): MapPoint {
   return {
@@ -39,6 +34,8 @@ export type MapData = {
   areas: AdminArea[];
   stateOutlines: Outline[];
   municipalityOutlines: Outline[];
+  /** Brazil (union of estados), for the mask that hides other countries. */
+  country: Geometry | null;
 };
 
 /** The API returns at most 1000 rows per request; read page by page. */
@@ -57,7 +54,7 @@ export async function fetchAllPages<T>(
 }
 
 export async function fetchMapData(): Promise<MapData> {
-  const [points, areas, stateOutlines, municipalityOutlines] = await Promise.all([
+  const [points, areas, stateOutlines, municipalityOutlines, country] = await Promise.all([
     fetchAllPages<PublishedPointRow>((from, to) =>
       supabase
         .from('published_point')
@@ -66,18 +63,31 @@ export async function fetchMapData(): Promise<MapData> {
         .range(from, to),
     ),
     fetchAllPages<AreaRow>((from, to) =>
-      supabase.from('area_with_points').select('code, level, name, geometry').order('code').range(from, to),
+      supabase
+        .from('area_with_points')
+        .select('code, level, name, geometry, border')
+        .order('code')
+        .range(from, to),
     ),
     fetchAllPages<Outline>((from, to) =>
-      supabase.from('state_outline').select('code, name, geometry').order('code').range(from, to),
+      supabase.from('state_outline').select('code, name, geometry, label').order('code').range(from, to),
     ),
     fetchAllPages<Outline>((from, to) =>
       supabase
         .from('municipality_outline')
-        .select('code, name, geometry')
+        .select('code, name, geometry, label')
         .order('code')
         .range(from, to),
     ),
+    fetchAllPages<{ geometry: Geometry }>((from, to) =>
+      supabase.from('country_shape').select('geometry').range(from, to),
+    ),
   ]);
-  return { points: points.map(toMapPoint), areas, stateOutlines, municipalityOutlines };
+  return {
+    points: points.map(toMapPoint),
+    areas,
+    stateOutlines,
+    municipalityOutlines,
+    country: country[0]?.geometry ?? null,
+  };
 }

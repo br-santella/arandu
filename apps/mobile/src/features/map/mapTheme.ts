@@ -82,10 +82,12 @@ export const VIEW_ZOOM = { estado: 5, municipio: 9 } as const;
 type BaseLayer = { id: string; 'source-layer'?: string; minzoom?: number };
 export type BaseLayerRule = { hide: true } | { minzoom: number };
 
+// Base-style place names only inside the município view; wider views use our
+// own IBGE labels (estados, municípios), so no neighbouring country's names show.
 const LABEL_MINZOOM: Record<string, number> = {
-  place_city_large: VIEW_ZOOM.estado,
-  place_city: VIEW_ZOOM.estado,
-  place_town: 7,
+  place_city_large: VIEW_ZOOM.municipio,
+  place_city: VIEW_ZOOM.municipio,
+  place_town: VIEW_ZOOM.municipio,
   place_village: VIEW_ZOOM.municipio,
   place_suburb: VIEW_ZOOM.municipio,
   place_other: VIEW_ZOOM.municipio,
@@ -93,8 +95,14 @@ const LABEL_MINZOOM: Record<string, number> = {
 
 /** How a layer of the base style must change; null = keep as is. */
 export function baseLayerRule(layer: BaseLayer): BaseLayerRule | null {
-  // The base style's estado borders are replaced by the official IBGE outlines.
-  if (layer.id === 'boundary_state') return { hide: true };
+  // Base style borders: estado borders are replaced by IBGE inner borders;
+  // country and maritime lines are not needed (only Brazil is shown).
+  if (layer.id.startsWith('boundary_')) return { hide: true };
+  // Country names: only Brazil is shown, and neighbours' names would peek out
+  // in pieces at the edge of the mask.
+  if (layer.id.startsWith('place_country_')) return { hide: true };
+  // Estado names come from IBGE (the base layer mixes in neighbours' provinces).
+  if (layer.id === 'place_state') return { hide: true };
   const sourceLayer = layer['source-layer'];
   const roads = ['transportation', 'transportation_name', 'aeroway'];
   const min =

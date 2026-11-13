@@ -24,6 +24,7 @@ Termos técnicos usados no Arandu, em ordem alfabética. Entre parênteses, o do
 | **Edge Function** | Pequeno programa que roda no servidor do Supabase; no Arandu, o guia (3) |
 | **Embedding** | Lista de números que representa o significado de um texto (5) |
 | **Endpoint** | Um endereço específico de uma API (3) |
+| **Divisa interna** | Parte do contorno de uma área compartilhada com outra área do país, sem o litoral nem fronteiras internacionais (2, 3) |
 | **Enum** | Tipo com lista fechada de valores permitidos (3) |
 | **Expo** | Conjunto de ferramentas para criar apps com React Native (2) |
 | **Expo Router** | Sistema de telas em que cada arquivo de `src/app/` é uma rota (2) |
@@ -47,6 +48,7 @@ Termos técnicos usados no Arandu, em ordem alfabética. Entre parênteses, o do
 | **Lint** | Verificação automática de erros comuns e de estilo no código (2, 7) |
 | **LLM** | Grande modelo de linguagem; IA que gera texto prevendo o próximo token (5) |
 | **Lockfile** | Arquivo com as versões exatas das dependências (7) |
+| **Máscara** (mapa) | Polígono do tamanho do mundo com um buraco no formato de uma região, para mostrar só essa região (2) |
 | **MapLibre** | Biblioteca de mapas gratuita e aberta (2) |
 | **Migration** | Arquivo SQL que descreve uma mudança na estrutura do banco (3) |
 | **OCR** | Transformar a imagem de um texto em texto digital (5) |
